@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>录入咨询服务 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <style>
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md); }
+    .form-item { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 12px; color: var(--color-text-secondary); font-weight: 500; }
+    .form-label .req { color: var(--color-error); margin-left: 2px; }
+    .form-input, .form-select, .form-textarea {
+      padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      font-size: 13px; font-family: inherit; outline: none; background: var(--color-bg-white);
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--color-primary); }
+    .form-input.mono { font-family: "SF Mono", Menlo, monospace; }
+    .form-section-title {
+      font-size: 14px; font-weight: 600; margin-bottom: var(--space-md);
+      padding-bottom: 6px; border-bottom: 1px solid var(--color-border-light);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .form-section-title::before {
+      content: ''; width: 3px; height: 14px; background: var(--color-primary); border-radius: 2px;
+    }
+    .form-tip { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+    .form-tip.text-primary { color: var(--color-primary); }
+    .form-actions {
+      display: flex; gap: var(--space-sm); justify-content: flex-end;
+      padding-top: var(--space-md); border-top: 1px solid var(--color-border-light);
+    }
+    .form-saved {
+      position: fixed; top: 20px; right: 20px; background: var(--color-success);
+      color: white; padding: 12px 20px; border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg); z-index: 1000;
+    }
+    .calculated {
+      background: var(--color-primary-bg); padding: 8px 12px;
+      border-radius: var(--radius-md); font-family: "SF Mono", monospace;
+      font-weight: 600; color: var(--color-primary-dark);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+            <div class="nav-group">
+        <div class="nav-group-title">理赔共建</div>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔案件列表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表中心</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <!-- 用户信息条 -->
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <a href="5-咨询服务表.html">咨询服务表</a>
+        <span class="separator">/</span>
+        <span>录入咨询项目</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">💼 录入咨询服务项目</div>
+          <div class="page-subtitle">咨询服务费台账 · 按项目按险种分类</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="window.location='5-咨询服务表.html'">取消</button>
+          <button class="btn btn-primary" onclick="submitForm()">💾 保存</button>
+        </div>
+      </div>
+
+      <form id="form" onsubmit="event.preventDefault(); submitForm();">
+
+        <div class="card">
+          <div class="card-title form-section-title">📋 一、咨询项目信息</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">序号<span class="req">*</span></label>
+              <input type="number" name="序号" id="序号" class="form-input mono" required>
+              <div class="form-tip text-primary">自动取当前最大值 +1</div>
+            </div>
+            <div class="form-item">
+              <label class="form-label">项目名称<span class="req">*</span></label>
+              <input type="text" name="项目名称" class="form-input" placeholder="例: 地上铁保险咨询服务费" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">险种类型<span class="req">*</span></label>
+              <select name="险种类型" class="form-select" required>
+                <option value="">请选择</option>
+                <option value="财产保险">财产保险</option>
+                <option value="意外伤害险">意外伤害险</option>
+                <option value="责任保险">责任保险</option>
+                <option value="延长保修责任险">延长保修责任险</option>
+                <option value="货物运输保险">货物运输保险</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">渠道<span class="req">*</span></label>
+              <select name="渠道" class="form-select" required>
+                <option value="经纪业务">经纪业务</option>
+                <option value="非经纪">非经纪</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">入账时间<span class="req">*</span></label>
+              <input type="date" name="入账时间" class="form-input" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title form-section-title">💰 二、咨询费</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">咨询费（含税）<span class="req">*</span></label>
+              <input type="number" name="咨询费含税" id="咨询费含税" class="form-input mono" step="0.01" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">咨询费（不含税）</label>
+              <div class="calculated" id="咨询费不含税">¥ 0.00</div>
+              <div class="form-tip">自动 = 含税 / 1.06</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="form-actions">
+            <button type="button" class="btn" onclick="window.location='5-咨询服务表.html'">取消</button>
+            <button type="submit" class="btn btn-primary">💾 保存</button>
+          </div>
+        </div>
+
+      </form>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+    requireAuth();
+
+    function recalc() {
+      const 含税 = parseFloat(document.getElementById('咨询费含税').value) || 0;
+      document.getElementById('咨询费不含税').textContent = '¥ ' + (含税 / 1.06).toFixed(2);
+    }
+
+    document.getElementById('咨询费含税').addEventListener('input', recalc);
+
+    // 自动填序号
+    const existing = getList(STORAGE_KEYS.consultations);
+    const maxSeq = existing.length ? Math.max(...existing.map(c => c.序号 || 0)) : 0;
+    document.getElementById('序号').value = maxSeq + 1;
+
+    function showSaved() {
+      const d = document.createElement('div');
+      d.className = 'form-saved';
+      d.innerHTML = '✅ 咨询项目已保存！';
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 2000);
+    }
+
+    function submitForm() {
+      const form = document.getElementById('form');
+      const data = {};
+      new FormData(form).forEach((v, k) => { data[k] = v; });
+
+      if (!data.项目名称 || !data.咨询费含税) {
+        alert('请填写必填字段');
+        return;
+      }
+
+      data.序号 = parseInt(data.序号) || 0;
+      data.咨询费含税 = parseFloat(data.咨询费含税) || 0;
+      data.咨询费不含税 = taxExcluded(data.咨询费含税);
+
+      addItem(STORAGE_KEYS.consultations, data);
+      showSaved();
+      setTimeout(() => window.location = '5-咨询服务表.html', 800);
+    }
+  </script>
+</body>
+</html>

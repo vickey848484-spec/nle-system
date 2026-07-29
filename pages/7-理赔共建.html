@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>理赔共建系统 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="../js/data.js"></script>
+  <script src="../js/charts.js"></script>
+  <style>
+    .chart-box { background: var(--color-bg-white); border-radius: var(--radius-lg); padding: var(--space-lg); box-shadow: var(--shadow-sm); margin-bottom: var(--space-md); }
+    .chart-box-title { font-size: 14px; font-weight: 600; margin-bottom: var(--space-md); display: flex; justify-content: space-between; align-items: center; }
+    .chart-canvas { width: 100%; height: 280px; }
+    .chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+    @media (max-width: 968px) { .chart-grid-2 { grid-template-columns: 1fr; } }
+    .case-status-flow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .case-status-flow .step {
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: var(--color-bg);
+      color: var(--color-text-secondary);
+    }
+    .case-status-flow .step.active { background: var(--color-primary); color: white; }
+    .case-status-flow .step.done { background: var(--color-primary-bg); color: var(--color-primary-dark); }
+    .case-status-flow .arrow { color: var(--color-text-muted); }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+        <a href="7-理赔共建.html" class="nav-item active"><span class="nav-icon">🔍</span><span>理赔共建系统</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">系统</div>
+        <a href="#" class="nav-item"><span class="nav-icon">⚙️</span><span>基础数据</span></a>
+        <a href="#" class="nav-item"><span class="nav-icon">📋</span><span>操作日志</span></a>
+      </div>
+      <!-- 用户信息条 -->
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <span>理赔共建系统</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">🔍 理赔共建系统</div>
+          <div class="page-subtitle">理赔案件全流程跟进 · 大案识别 · 审核流 · 赔款计算</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="exportClaimsCSV()">📥 导出 CSV</button>
+          <a href="理赔数据导入.html" class="btn">📤 导入理赔数据</a>
+          <a href="理赔案件详情.html" class="btn btn-primary">+ 新建案件</a>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <!-- 大案预警 -->
+      <div class="card" id="bigCasesCard">
+        <div class="card-header">
+          <div class="card-title">⚠️ 大案预警（报案未决 ≥ 2 万）</div>
+          <span class="text-muted" style="font-size: 12px;">每周/每日筛选 · 自动识别</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>赔案号</th>
+                <th>保单号</th>
+                <th>车牌号</th>
+                <th>损失类型</th>
+                <th>人伤</th>
+                <th>异地</th>
+                <th>出险日期</th>
+                <th class="text-right">报案金额</th>
+                <th>当前状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="bigCasesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 理赔案件列表 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 理赔案件列表</div>
+          <div style="display: flex; gap: 8px;">
+            <select id="filterStatus" class="filter-select">
+              <option value="">全部状态</option>
+              <option>报案</option>
+              <option>立案</option>
+              <option>初审</option>
+              <option>复审</option>
+              <option>结案</option>
+              <option>销案</option>
+            </select>
+            <select id="filterType" class="filter-select">
+              <option value="">全部损失类型</option>
+              <option>车损</option>
+              <option>三责</option>
+              <option>人伤</option>
+              <option>盗抢</option>
+              <option>玻璃</option>
+              <option>自燃</option>
+              <option>其他</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <input type="text" id="searchInput" class="search-input" placeholder="搜索赔案号 / 保单号 / 车牌号">
+          <button class="btn" onclick="resetFilters()">🔄 重置</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>赔案号</th>
+                <th>保单号</th>
+                <th>车牌号</th>
+                <th>承保保司</th>
+                <th>损失类型</th>
+                <th>报案日期</th>
+                <th class="text-right">报案金额</th>
+                <th class="text-right">已决金额</th>
+                <th class="text-right">未决金额</th>
+                <th>状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="claimsTableBody"></tbody>
+          </table>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-md); font-size: 13px; color: var(--color-text-secondary);">
+          <div id="paginationInfo">共 0 条记录</div>
+        </div>
+      </div>
+
+      <!-- 图表 -->
+      <div class="chart-grid-2">
+        <div class="chart-box">
+          <div class="chart-box-title">
+            <span>📊 案件状态分布</span>
+          </div>
+          <div id="statusPie" class="chart-canvas"></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-box-title">
+            <span>📈 损失类型金额</span>
+          </div>
+          <div id="typeBar" class="chart-canvas"></div>
+        </div>
+      </div>
+
+      <!-- 理赔核心指标（PRD 第六章） -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📊 理赔核心指标（仅经纪业务）</div>
+        </div>
+        <div class="kpi-grid" id="kpiCoreGrid"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+
+    let allClaims = [];
+
+    function loadData() {
+      allClaims = getList(STORAGE_KEYS.claims);
+    }
+
+    function statusTag(s) {
+      const map = {
+        '报案': '<span class="tag tag-info">报案</span>',
+        '立案': '<span class="tag tag-warning">立案</span>',
+        '初审': '<span class="tag tag-warning">初审</span>',
+        '复审': '<span class="tag tag-warning">复审</span>',
+        '结案': '<span class="tag tag-success">结案</span>',
+        '销案': '<span class="tag tag-default">销案</span>'
+      };
+      return map[s] || ('<span class="tag tag-default">' + s + '</span>');
+    }
+
+    function getBrokerPolicies() {
+      // 仅经纪业务（按 PRD 第六章要求）
+      return getList(STORAGE_KEYS.carPolicies).filter(p => p.渠道 === '经纪');
+    }
+
+    function renderKPI() {
+      const total = allClaims.length;
+      const 已结案 = allClaims.filter(c => c.案件状态 === '结案').length;
+      const 报案量 = allClaims.length;
+      const 结案量 = 已结案;
+      const 已决 = allClaims.reduce((s, c) => s + (c.已决金额 || 0), 0);
+      const 未决 = allClaims.reduce((s, c) => s + (c.未决金额 || 0), 0);
+      const 大案 = allClaims.filter(c => c.是否大案).length;
+
+      document.getElementById('kpiGrid').innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-label">报案量</div>
+          <div class="kpi-value">${报案量}</div>
+          <div class="kpi-change up">累计报案</div>
+        </div>
+        <div class="kpi-card secondary">
+          <div class="kpi-label">结案量</div>
+          <div class="kpi-value">${结案量}</div>
+          <div class="kpi-change">结案率 ${total ? Math.round(结案量 / total * 100) : 0}%</div>
+        </div>
+        <div class="kpi-card accent">
+          <div class="kpi-label">已决赔款</div>
+          <div class="kpi-value">¥ ${(已决 / 10000).toFixed(2)}<span class="unit">万</span></div>
+          <div class="kpi-change">已结案件</div>
+        </div>
+        <div class="kpi-card warning">
+          <div class="kpi-label">未决赔款</div>
+          <div class="kpi-value">¥ ${(未决 / 10000).toFixed(2)}<span class="unit">万</span></div>
+          <div class="kpi-change down">${大案} 大案待结</div>
+        </div>
+      `;
+
+      // 核心指标
+      const 件数 = allClaims.length;
+      const 案均赔款 = 件数 ? (已决 / 结案量 || 0) : 0;
+      const 人伤 = allClaims.filter(c => c.是否人伤 === '是').length;
+      const 异地 = allClaims.filter(c => c.是否异地 === '是').length;
+      const 大案占比 = 件数 ? Math.round(大案 / 件数 * 100) : 0;
+      const 人伤占比 = 件数 ? Math.round(人伤 / 件数 * 100) : 0;
+      const 异地占比 = 件数 ? Math.round(异地 / 件数 * 100) : 0;
+
+      // 出险频度（每个保单出险次数）
+      const freqMap = {};
+      allClaims.forEach(c => {
+        if (c.保单号) freqMap[c.保单号] = (freqMap[c.保单号] || 0) + 1;
+      });
+      const avgFreq = Object.keys(freqMap).length ? (件数 / Object.keys(freqMap).length).toFixed(2) : 0;
+
+      document.getElementById('kpiCoreGrid').innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-label">案均赔款</div>
+          <div class="kpi-value">¥ ${案均赔款.toFixed(0)}</div>
+          <div class="kpi-change">已结案件均值</div>
+        </div>
+        <div class="kpi-card secondary">
+          <div class="kpi-label">件均保费</div>
+          <div class="kpi-value">—</div>
+          <div class="kpi-change">见承保端</div>
+        </div>
+        <div class="kpi-card accent">
+          <div class="kpi-label">大案占比</div>
+          <div class="kpi-value">${大案占比}<span class="unit">%</span></div>
+          <div class="kpi-change">≥2 万 案件</div>
+        </div>
+        <div class="kpi-card warning">
+          <div class="kpi-label">人伤占比</div>
+          <div class="kpi-value">${人伤占比}<span class="unit">%</span></div>
+          <div class="kpi-change">${人伤} 起人伤</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">异地出险比</div>
+          <div class="kpi-value">${异地占比}<span class="unit">%</span></div>
+          <div class="kpi-change">${异地} 起异地</div>
+        </div>
+        <div class="kpi-card secondary">
+          <div class="kpi-label">出险频度</div>
+          <div class="kpi-value">${avgFreq}</div>
+          <div class="kpi-change">次/保单</div>
+        </div>
+      `;
+    }
+
+    function renderBigCases() {
+      const big = allClaims.filter(c => c.是否大案 && c.案件状态 !== '结案' && c.案件状态 !== '销案');
+      const tbody = document.getElementById('bigCasesBody');
+
+      if (big.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="empty"><div class="empty-icon">✅</div>当前无大案预警</td></tr>';
+        return;
+      }
+
+      big.sort((a, b) => (b.报案金额 || 0) - (a.报案金额 || 0));
+
+      tbody.innerHTML = big.map(c => `
+        <tr>
+          <td class="text-mono"><strong>${c.赔案号}</strong></td>
+          <td class="text-mono">${c.保单号}</td>
+          <td><strong>${c.车牌号 || '—'}</strong></td>
+          <td>${c.损失类型}</td>
+          <td>${c.是否人伤 === '是' ? '<span class="tag tag-error">是</span>' : '<span class="tag tag-default">否</span>'}</td>
+          <td>${c.是否异地 === '是' ? '<span class="tag tag-warning">是</span>' : '<span class="tag tag-default">否</span>'}</td>
+          <td>${formatDate(c.出险日期)}</td>
+          <td class="text-right text-mono"><strong>¥ ${(c.报案金额 || 0).toLocaleString()}</strong></td>
+          <td>${statusTag(c.案件状态)}</td>
+          <td><a href="理赔案件详情.html?id=${c.id}" class="btn">详情</a></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderTable() {
+      const q = (document.getElementById('searchInput').value || '').toLowerCase();
+      const status = document.getElementById('filterStatus').value;
+      const type = document.getElementById('filterType').value;
+
+      const filtered = allClaims.filter(c => {
+        if (q && ![c.赔案号, c.保单号, c.车牌号, c.报案人].join(' ').toLowerCase().includes(q)) return false;
+        if (status && c.案件状态 !== status) return false;
+        if (type && c.损失类型 !== type) return false;
+        return true;
+      });
+
+      const tbody = document.getElementById('claimsTableBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" class="empty"><div class="empty-icon">📭</div>暂无理赔案件</td></tr>';
+      } else {
+        tbody.innerHTML = filtered.map(c => `
+          <tr>
+            <td class="text-mono"><strong>${c.赔案号}</strong></td>
+            <td class="text-mono">${c.保单号}</td>
+            <td><strong>${c.车牌号 || '—'}</strong></td>
+            <td>${c.承保保司}</td>
+            <td>${c.损失类型}</td>
+            <td>${formatDate(c.报案日期)}</td>
+            <td class="text-right text-mono">¥ ${(c.报案金额 || 0).toLocaleString()}</td>
+            <td class="text-right text-mono">¥ ${(c.已决金额 || 0).toLocaleString()}</td>
+            <td class="text-right text-mono">¥ ${(c.未决金额 || 0).toLocaleString()}</td>
+            <td>${statusTag(c.案件状态)}</td>
+            <td><a href="理赔案件详情.html?id=${c.id}" class="btn">详情</a></td>
+          </tr>
+        `).join('');
+      }
+
+      document.getElementById('paginationInfo').textContent = `共 ${allClaims.length} 条记录 · 当前 ${filtered.length} 条`;
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterType').value = '';
+      renderTable();
+    }
+
+    function renderCharts() {
+      // 状态饼图
+      const statusMap = {};
+      allClaims.forEach(c => { statusMap[c.案件状态] = (statusMap[c.案件状态] || 0) + 1; });
+      const statusData = Object.keys(statusMap).map(k => ({ name: k, value: statusMap[k] }));
+      if (statusData.length > 0) pieChart('statusPie', { data: statusData });
+
+      // 损失类型柱图
+      const typeMap = {};
+      allClaims.forEach(c => {
+        typeMap[c.损失类型] = (typeMap[c.损失类型] || 0) + (c.报案金额 || 0);
+      });
+      const items = Object.keys(typeMap);
+      if (items.length > 0) {
+        barChart('typeBar', {
+          xData: items,
+          yData: items.map(k => Math.round(typeMap[k] / 1000))
+        });
+      }
+    }
+
+    function exportClaimsCSV() {
+      const headers = ['赔案号', '保单号', '车牌号', '承保保司', '损失类型', '报案日期', '报案金额', '已决金额', '未决金额', '案件状态'];
+      const rows = allClaims.map(c => [c.赔案号, c.保单号, c.车牌号, c.承保保司, c.损失类型, c.报案日期, c.报案金额, c.已决金额, c.未决金额, c.案件状态]);
+      const csv = '﻿' + [headers, ...rows].map(r => r.map(c => `"${c || ''}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = '理赔案件_' + new Date().toISOString().slice(0, 10) + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('searchInput').addEventListener('input', renderTable);
+    document.getElementById('filterStatus').addEventListener('change', renderTable);
+    document.getElementById('filterType').addEventListener('change', renderTable);
+
+    loadData();
+    renderKPI();
+    renderBigCases();
+    renderTable();
+    renderCharts();
+  </script>
+</body>
+</html>

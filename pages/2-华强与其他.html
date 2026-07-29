@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>华强与非车险 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item active"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+            <div class="nav-group">
+        <div class="nav-group-title">理赔共建</div>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔案件列表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表中心</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">系统</div>
+        <a href="#" class="nav-item"><span class="nav-icon">⚙️</span><span>基础数据</span></a>
+        <a href="#" class="nav-item"><span class="nav-icon">📋</span><span>操作日志</span></a>
+      </div>
+      <!-- 用户信息条 -->
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <span>华强与其它非车险</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">华强与其他非车险</div>
+          <div class="page-subtitle">团体意外险、雇主责任险、财产保险、责任险等</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn">📥 导入 Excel</button>
+          <a href="华强录入.html" class="btn btn-primary">+ 录入保单</a>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">承保保单数</div>
+          <div class="kpi-value">156</div>
+          <div class="kpi-change up">本月新增 12 单</div>
+        </div>
+        <div class="kpi-card accent">
+          <div class="kpi-label">保费（含税）</div>
+          <div class="kpi-value">¥ 0.78<span class="unit">M</span></div>
+          <div class="kpi-change">含税</div>
+        </div>
+        <div class="kpi-card secondary">
+          <div class="kpi-label">应结佣金</div>
+          <div class="kpi-value">¥ 195K</div>
+          <div class="kpi-change">25% 平均比例</div>
+        </div>
+        <div class="kpi-card warning">
+          <div class="kpi-label">T+1 同步状态</div>
+          <div class="kpi-value">✅</div>
+          <div class="kpi-change">承保 → 佣金</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 承保明细</div>
+          <div style="display: flex; gap: 8px;">
+            <select class="filter-select"><option>全部险种</option><option>团体意外险</option><option>雇主责任险</option><option>财产保险</option></select>
+            <select class="filter-select"><option>全部保司</option><option>平安产险</option><option>太保产险</option></select>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <input type="text" class="search-input" placeholder="搜索保单号 / 投保人 / 项目">
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>业务板块</th>
+                <th>保单号</th>
+                <th>投保人</th>
+                <th>被保险人</th>
+                <th>地区</th>
+                <th>险种</th>
+                <th>项目负责人</th>
+                <th>起保日期</th>
+                <th>终保日期</th>
+                <th class="text-right">保费（含税）</th>
+                <th class="text-right">应结佣金</th>
+                <th>状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="tag tag-info">华强</span></td>
+                <td class="text-mono">10502003902838641881</td>
+                <td>华强方特（沈阳）</td>
+                <td>华强方特（沈阳）</td>
+                <td>方特</td>
+                <td>团体意外险</td>
+                <td>何静君</td>
+                <td>2025-01-26</td>
+                <td>2026-01-25</td>
+                <td class="text-right text-mono">¥ 29,520.00</td>
+                <td class="text-right text-mono">¥ 6,962.27</td>
+                <td><span class="tag tag-success">已承保</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-info">华强</span></td>
+                <td class="text-mono">10502003902851190585</td>
+                <td>华强方特（徐州）</td>
+                <td>华强方特（徐州）</td>
+                <td>方特</td>
+                <td>雇主责任险</td>
+                <td>何静君</td>
+                <td>2025-02-05</td>
+                <td>2026-02-04</td>
+                <td class="text-right text-mono">¥ 49,060.00</td>
+                <td class="text-right text-mono">¥ 11,570.76</td>
+                <td><span class="tag tag-success">已承保</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-default">地上铁</span></td>
+                <td class="text-mono">DST-2025-000087</td>
+                <td>深圳易维新能源汽车</td>
+                <td>深圳易维新能源汽车</td>
+                <td>深圳</td>
+                <td>财产保险</td>
+                <td>林涛</td>
+                <td>2025-06-01</td>
+                <td>2026-05-31</td>
+                <td class="text-right text-mono">¥ 158,000.00</td>
+                <td class="text-right text-mono">¥ 39,500.00</td>
+                <td><span class="tag tag-success">已承保</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-default">地上铁</span></td>
+                <td class="text-mono">DST-2025-000156</td>
+                <td>广州地上铁</td>
+                <td>广州地上铁</td>
+                <td>广州</td>
+                <td>公众责任险</td>
+                <td>林涛</td>
+                <td>2025-08-15</td>
+                <td>2026-08-14</td>
+                <td class="text-right text-mono">¥ 24,800.00</td>
+                <td class="text-right text-mono">¥ 6,200.00</td>
+                <td><span class="tag tag-success">已承保</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-info">华强</span></td>
+                <td class="text-mono">10502003902838641881</td>
+                <td class="text-mono">30502001902385626517</td>
+                <td>华强方特（沈阳）</td>
+                <td>方特</td>
+                <td>团体意外险</td>
+                <td>何静君</td>
+                <td>2025-02-16</td>
+                <td>2026-01-25</td>
+                <td class="text-right text-mono">¥ 320.00</td>
+                <td class="text-right text-mono">¥ 75.47</td>
+                <td><span class="tag tag-warning">批增</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-default">地上铁</span></td>
+                <td class="text-mono">DST-2026-000012</td>
+                <td>东莞鸿源物流</td>
+                <td>东莞鸿源物流</td>
+                <td>东莞</td>
+                <td>货物运输险</td>
+                <td>陈经理</td>
+                <td>2026-03-01</td>
+                <td>2027-02-28</td>
+                <td class="text-right text-mono">¥ 86,500.00</td>
+                <td class="text-right text-mono">¥ 21,625.00</td>
+                <td><span class="tag tag-success">已承保</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-md); font-size: 13px; color: var(--color-text-secondary);">
+          <div>共 156 条记录 · 当前 1-6 条</div>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn">‹ 上一页</button>
+            <button class="btn btn-primary">1</button>
+            <button class="btn">2</button>
+            <button class="btn">3</button>
+            <button class="btn">下一页 ›</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

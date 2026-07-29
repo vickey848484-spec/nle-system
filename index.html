@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新能源物流城业务系统 - 主页</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/charts.js"></script>
+  <style>
+    .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-md); }
+    .chart-box { background: var(--color-bg-white); border-radius: var(--radius-lg); padding: var(--space-lg); box-shadow: var(--shadow-sm); }
+    .chart-box-title { font-size: 14px; font-weight: 600; margin-bottom: var(--space-md); display: flex; justify-content: space-between; align-items: center; }
+    .chart-canvas { width: 100%; height: 280px; }
+    @media (max-width: 968px) { .chart-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- 左侧导航 -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1>
+          <span class="logo-icon">⚡</span>
+          <div>
+            <div>新能源物流城</div>
+            <div class="logo-subtitle">运营业务管理系统</div>
+          </div>
+        </h1>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="index.html" class="nav-item active">
+          <span class="nav-icon">📊</span>
+          <span>工作台</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="pages/1-车险承保.html" class="nav-item">
+          <span class="nav-icon">🚗</span>
+          <span>车险承保与理赔</span>
+        </a>
+        <a href="pages/2-华强与其他.html" class="nav-item">
+          <span class="nav-icon">🏢</span>
+          <span>华强与其他非车险</span>
+        </a>
+        <a href="pages/3-延保.html" class="nav-item">
+          <span class="nav-icon">🔧</span>
+          <span>延保</span>
+        </a>
+        <a href="pages/4-协议管理.html" class="nav-item">
+          <span class="nav-icon">📄</span>
+          <span>协议管理</span>
+        </a>
+        <a href="pages/5-咨询服务表.html" class="nav-item">
+          <span class="nav-icon">💼</span>
+          <span>咨询服务表</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="pages/6-佣金管理.html" class="nav-item">
+          <span class="nav-icon">💰</span>
+          <span>佣金管理</span>
+        </a>
+      </div>
+
+            <div class="nav-group">
+        <div class="nav-group-title">理赔共建</div>
+        <a href="pages/7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔案件列表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表中心</div>
+        <a href="pages/8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="pages/10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">系统</div>
+        <a href="#" class="nav-item">
+          <span class="nav-icon">⚙️</span>
+          <span>基础数据</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="nav-icon">📋</span>
+          <span>操作日志</span>
+        </a>
+      </div>
+
+      <!-- 用户信息条 -->
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="main">
+
+      <!-- 横幅 -->
+      <div class="banner">
+        <span class="banner-icon">⚡</span>
+        <span>欢迎回来，Vickey。今天是 2026 年 7 月 29 日。本月新增 187 笔保单，3 份协议即将到期。</span>
+      </div>
+
+      <!-- 页面标题 -->
+      <div class="page-header">
+        <div>
+          <div class="page-title">工作台</div>
+          <div class="page-subtitle">新能源物流城业务全景 · 2026 Q3</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn">📥 导出报表</button>
+          <button class="btn btn-primary">+ 录入保单</button>
+        </div>
+      </div>
+
+      <!-- KPI 卡片 -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">本月承保保费（含税）</div>
+          <div class="kpi-value">¥ 4.82<span class="unit">M</span></div>
+          <div class="kpi-change up">↑ 12.3% 较上月</div>
+        </div>
+        <div class="kpi-card accent">
+          <div class="kpi-label">待结算佣金</div>
+          <div class="kpi-value">¥ 1.58<span class="unit">M</span></div>
+          <div class="kpi-change down">23 单未结清</div>
+        </div>
+        <div class="kpi-card secondary">
+          <div class="kpi-label">在保车辆数</div>
+          <div class="kpi-value">2,847<span class="unit">台</span></div>
+          <div class="kpi-change up">↑ 156 较上月</div>
+        </div>
+        <div class="kpi-card warning">
+          <div class="kpi-label">即将到期协议</div>
+          <div class="kpi-value">3<span class="unit">份</span></div>
+          <div class="kpi-change">30 天内</div>
+        </div>
+      </div>
+
+      <!-- 6 大模块入口 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">业务模块</div>
+          <a href="#" class="btn">查看全部</a>
+        </div>
+        <div class="module-grid">
+
+          <a href="pages/1-车险承保.html" class="module-card">
+            <div class="module-card-icon">🚗</div>
+            <div class="module-card-title">车险承保与理赔</div>
+            <div class="module-card-desc">车辆保单全生命周期管理、7 张业务报表、理赔案件跟踪</div>
+            <div class="module-card-stats">
+              <div class="module-card-stat"><strong>1,892</strong>保单</div>
+              <div class="module-card-stat"><strong>34</strong>待理赔</div>
+            </div>
+          </a>
+
+          <a href="pages/2-华强与其他.html" class="module-card secondary">
+            <div class="module-card-icon">🏢</div>
+            <div class="module-card-title">华强与其他</div>
+            <div class="module-card-desc">团体意外险、雇主责任险、财产保险等非车险保单</div>
+            <div class="module-card-stats">
+              <div class="module-card-stat"><strong>156</strong>保单</div>
+              <div class="module-card-stat"><strong>12</strong>本月新增</div>
+            </div>
+          </a>
+
+          <a href="pages/3-延保.html" class="module-card warning">
+            <div class="module-card-icon">🔧</div>
+            <div class="module-card-title">延保</div>
+            <div class="module-card-desc">延长保修责任保险，覆盖车辆原厂保修期外保障</div>
+            <div class="module-card-stats">
+              <div class="module-card-stat"><strong>423</strong>保单</div>
+              <div class="module-card-stat"><strong>¥587K</strong>满期保费</div>
+            </div>
+          </a>
+
+          <a href="pages/4-协议管理.html" class="module-card accent">
+            <div class="module-card-icon">📄</div>
+            <div class="module-card-title">协议管理</div>
+            <div class="module-card-desc">保司协议生命周期管理，含框架、结算、补充协议</div>
+            <div class="module-card-stats">
+              <div class="module-card-stat"><strong>28</strong>保司</div>
+              <div class="module-card-stat"><strong>3</strong>即将到期</div>
+            </div>
+          </a>
+
+          <a href="pages/5-咨询服务表.html" class="module-card">
+            <div class="module-card-icon">💼</div>
+            <div class="module-card-title">咨询服务表</div>
+            <div class="module-card-desc">咨询服务费台账，按项目按险种分类</div>
+            <div class="module-card-stats">
+              <div class="module-card-stat"><strong>¥2.0M</strong>本年累计</div>
+              <div class="module-card-stat"><strong>5</strong>项目</div>
+            </div>
+          </a>
+
+          <a href="pages/6-佣金管理.html" class="module-card secondary">
+            <div class="module-card-icon">💰</div>
+            <div class="module-card-title">佣金管理</div>
+            <div class="module-card-desc">佣金结算看板、应结/实结对账、监管报表自动生成</div>
+            <div class="module-card-stats">
+              <div class="module-card-stat"><strong>¥1.58M</strong>应结</div>
+              <div class="module-card-stat"><strong>¥1.52M</strong>实结</div>
+            </div>
+          </a>
+
+          <a href="pages/7-理赔共建.html" class="module-card warning">
+            <div class="module-card-icon">🔍</div>
+            <div class="module-card-title">理赔共建系统</div>
+            <div class="module-card-desc">理赔案件全流程跟进 · 大案识别 · 审核流 · OCR 识别</div>
+            <div class="module-card-stats">
+              <div class="module-card-stat"><strong>4</strong>案件</div>
+              <div class="module-card-stat"><strong>2</strong>大案待结</div>
+            </div>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- 图表 -->
+      <div class="chart-grid">
+        <div class="chart-box">
+          <div class="chart-box-title">
+            <span>📈 承保保费月度趋势</span>
+            <span class="text-muted" style="font-size: 12px;">实时 · 全板块</span>
+          </div>
+          <div id="premiumChart" class="chart-canvas"></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-box-title">
+            <span>🥧 板块应结佣金占比</span>
+          </div>
+          <div id="segmentPie" class="chart-canvas"></div>
+        </div>
+      </div>
+
+      <!-- 待办 -->
+      <div class="card" style="margin-top: var(--space-md);">
+        <div class="card-header">
+          <div class="card-title">📌 待办事项</div>
+          <a href="#" class="btn">查看全部</a>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-sm);">
+          <div style="padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border-left: 3px solid var(--color-warning);">
+            <div style="font-weight: 600; font-size: 13px;">PICC 财产保险协议即将到期</div>
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">PC-JSXY-2026-001 · 剩余 45 天</div>
+          </div>
+          <div style="padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border-left: 3px solid var(--color-error);">
+            <div style="font-weight: 600; font-size: 13px;">3 笔外部结算单待核对</div>
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">涉及平安、太平洋、大家 · 共 ¥124,500</div>
+          </div>
+          <div style="padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border-left: 3px solid var(--color-info);">
+            <div style="font-weight: 600; font-size: 13px;">12 张保单已录入待复核</div>
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">华强板块 · 何静君</div>
+          </div>
+          <div style="padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border-left: 3px solid var(--color-primary);">
+            <div style="font-weight: 600; font-size: 13px;">5 月监管报表待提交</div>
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">产险 + 人身险 · 截止 7 月 31 日</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+
+    // 鉴权检查
+    const session = requireAuth();
+    if (session) {
+      document.getElementById('userName').textContent = session.name;
+      document.getElementById('userRole').textContent = session.role === 'admin' ? '管理员' : (session.role === 'operator' ? '运营专员' : '财务专员');
+      document.getElementById('userAvatar').textContent = session.name.slice(0, 1).toUpperCase();
+    }
+
+    // 渲染月度承保保费折线图
+    function renderPremiumChart() {
+      const data = monthlyPremium();
+      const keys = Object.keys(data).sort();
+      // 补全过去 12 个月
+      const months = [];
+      const values = [];
+      const now = new Date();
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const m = d.toISOString().slice(0, 7);
+        months.push(m.slice(5) + '月');
+        values.push(Math.round((data[m] || 0) / 10000));  // 转万元
+      }
+      lineChart('premiumChart', {
+        xData: months,
+        yData: values,
+        yFormatter: '{value} 万',
+        series: [{
+          name: '保费（万元）',
+          type: 'line',
+          data: values,
+          smooth: true,
+          symbolSize: 8,
+          lineStyle: { width: 3 },
+          areaStyle: {
+            color: {
+              type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(0,191,165,0.3)' },
+                { offset: 1, color: 'rgba(0,191,165,0)' }
+              ]
+            }
+          }
+        }]
+      });
+    }
+
+    // 板块应结佣金饼图
+    function renderSegmentPie() {
+      const data = segmentCommission();
+      const items = Object.keys(data).map(k => ({
+        name: k,
+        value: Math.round(data[k])
+      }));
+      if (items.length === 0) {
+        document.getElementById('segmentPie').innerHTML = '<div class="empty"><div class="empty-icon">📊</div>暂无佣金数据</div>';
+        return;
+      }
+      pieChart('segmentPie', { data: items });
+    }
+
+    renderPremiumChart();
+    renderSegmentPie();
+  </script>
+</body>
+</html>

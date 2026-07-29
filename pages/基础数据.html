@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>基础数据 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <style>
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-sm); }
+    .form-item { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 12px; color: var(--color-text-secondary); font-weight: 500; }
+    .form-label .req { color: var(--color-error); margin-left: 2px; }
+    .form-input, .form-select {
+      padding: 7px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      font-size: 13px; font-family: inherit; outline: none; background: white;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--color-primary); }
+    .form-input.mono { font-family: "SF Mono", Menlo, monospace; }
+    .tab-bar { display: flex; gap: 8px; margin-bottom: var(--space-md); }
+    .tab-bar .btn-primary { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+    .form-section-title {
+      font-size: 13px; font-weight: 600; margin-bottom: var(--space-sm);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .form-section-title::before {
+      content: ''; width: 3px; height: 12px; background: var(--color-primary); border-radius: 2px;
+    }
+    .form-saved {
+      position: fixed; top: 20px; right: 20px; background: var(--color-success);
+      color: white; padding: 12px 20px; border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg); z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔案件列表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表中心</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">系统</div>
+        <a href="基础数据.html" class="nav-item active"><span class="nav-icon">⚙️</span><span>基础数据</span></a>
+        <a href="用户管理.html" class="nav-item"><span class="nav-icon">👥</span><span>用户管理</span></a>
+        <a href="操作日志.html" class="nav-item"><span class="nav-icon">📋</span><span>操作日志</span></a>
+      </div>
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <span>基础数据</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">⚙️ 基础数据管理</div>
+          <div class="page-subtitle">险种映射 · 保司基础 · 车辆基础 · 车牌号库</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn">📥 导出全部</button>
+        </div>
+      </div>
+
+      <!-- Tab 切换 -->
+      <div class="card">
+        <div class="tab-bar">
+          <button class="btn btn-primary" id="tab险种" onclick="switchTab('险种')">🗂️ 险种映射</button>
+          <button class="btn" id="tab保司" onclick="switchTab('保司')">🏢 保司基础数据</button>
+          <button class="btn" id="tab车辆" onclick="switchTab('车辆')">🚗 车辆基础数据库</button>
+          <button class="btn" id="tab车牌" onclick="switchTab('车牌')">🔢 车牌号数据库</button>
+        </div>
+      </div>
+
+      <!-- 险种映射 -->
+      <div class="card" id="panel险种">
+        <div class="card-header">
+          <div class="card-title">🗂️ 险种映射表（保司条款 → 系统标准险种）</div>
+        </div>
+        <div class="form-tip" style="margin-bottom: var(--space-md);">
+          承保数据导入时，系统根据 <strong>保司编码 + 保司险种全称</strong> 查询映射表，自动转换为系统标准险种（交强险/商业险/驾意险）。
+        </div>
+
+        <!-- 新增行 -->
+        <div style="background: var(--color-bg); padding: var(--space-md); border-radius: var(--radius-md); margin-bottom: var(--space-md);">
+          <div class="form-section-title">+ 新增映射</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">保司编码<span class="req">*</span></label>
+              <select id="map保司" class="form-select">
+                <option>PC</option><option>TB</option><option>DJ</option><option>RB</option><option>ZL</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">保司险种全称<span class="req">*</span></label>
+              <input type="text" id="map险种全称" class="form-input" placeholder="例: 机动车交通事故责任强制保险">
+            </div>
+            <div class="form-item">
+              <label class="form-label">系统标准险种<span class="req">*</span></label>
+              <select id="map系统" class="form-select">
+                <option>交强险</option>
+                <option>商业险</option>
+                <option>驾意险</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <button class="btn btn-primary" onclick="addMapping()" style="margin-top: 18px;">+ 添加映射</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>保司编码</th>
+                <th>保司</th>
+                <th>保司险种全称</th>
+                <th>→ 系统标准险种</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="mappingBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 保司基础数据 -->
+      <div class="card" id="panel保司" style="display: none;">
+        <div class="card-header">
+          <div class="card-title">🏢 保司基础数据</div>
+          <button class="btn btn-primary" onclick="addInsurer()">+ 新增保司</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>保司编码</th>
+                <th>保司全称</th>
+                <th>保司系</th>
+                <th>渠道</th>
+                <th>协议数量</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="insurerBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 车辆基础数据库 -->
+      <div class="card" id="panel车辆" style="display: none;">
+        <div class="card-header">
+          <div class="card-title">🚗 车辆基础数据库</div>
+          <button class="btn btn-primary" onclick="alert('请录入保单时自动维护')">📥 自动维护</button>
+        </div>
+        <div class="form-tip" style="margin-bottom: var(--space-md);">
+          根据车架号（VIN）作为唯一标识，将系统已导入的车辆数据自动捕获；车牌发生变化时显示最新车牌，保留历史数据。
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>车架号 (VIN)</th>
+                <th>当前车牌</th>
+                <th>历史车牌</th>
+                <th>车辆品牌</th>
+                <th>车系</th>
+                <th>车型</th>
+                <th>车主</th>
+                <th>运营商</th>
+                <th>首次录入</th>
+                <th>最近出现</th>
+                <th>出现次数</th>
+              </tr>
+            </thead>
+            <tbody id="vehicleBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 车牌号数据库 -->
+      <div class="card" id="panel车牌" style="display: none;">
+        <div class="card-header">
+          <div class="card-title">🔢 各省市车牌号基础数据库</div>
+        </div>
+        <div class="form-tip" style="margin-bottom: var(--space-md);">
+          一次性导入全国各省市车牌，作为保单数据中省份与城市的匹配依据。
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>车牌前缀</th>
+                <th>省份</th>
+                <th>城市</th>
+                <th>类型</th>
+              </tr>
+            </thead>
+            <tbody id="plateBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+
+    function switchTab(tab) {
+      ['险种', '保司', '车辆', '车牌'].forEach(t => {
+        document.getElementById('panel' + t).style.display = (t === tab ? 'block' : 'none');
+        const btn = document.getElementById('tab' + t);
+        btn.classList.toggle('btn-primary', t === tab);
+        btn.classList.toggle('btn', t !== tab);
+      });
+      if (tab === '车辆') renderVehicles();
+      if (tab === '车牌') renderPlates();
+      if (tab === '保司') renderInsurers();
+    }
+
+    // ===== 险种映射 =====
+    let mappings = JSON.parse(localStorage.getItem('nle.insuranceMapping') || '[]');
+    if (mappings.length === 0) {
+      mappings = [
+        { 保司编码: 'PC', 保司: '平安产险', 保司险种全称: '机动车交通事故责任强制保险', 系统标准: '交强险' },
+        { 保司编码: 'PC', 保司: '平安产险', 保司险种全称: '机动车综合商业保险', 系统标准: '商业险' },
+        { 保司编码: 'PC', 保司: '平安产险', 保司险种全称: '平安驾驶人意外伤害保险', 系统标准: '驾意险' },
+        { 保司编码: 'TB', 保司: '太保产险', 保司险种全称: '机动车交通事故责任强制保险', 系统标准: '交强险' },
+        { 保司编码: 'TB', 保司: '太保产险', 保司险种全称: '太保机动车综合商业保险', 系统标准: '商业险' },
+        { 保司编码: 'DJ', 保司: '大家财险', 保司险种全称: '大家机动车交通事故责任强制保险', 系统标准: '交强险' },
+        { 保司编码: 'DJ', 保司: '大家财险', 保司险种全称: '大家机动车综合商业保险', 系统标准: '商业险' },
+        { 保司编码: 'RB', 保司: '人保财险', 保司险种全称: '机动车交通事故责任强制保险', 系统标准: '交强险' },
+        { 保司编码: 'RB', 保司: '人保财险', 保司险种全称: '人保机动车综合商业保险', 系统标准: '商业险' }
+      ];
+      localStorage.setItem('nle.insuranceMapping', JSON.stringify(mappings));
+    }
+
+    const CARRIER_NAME = { PC: '平安产险', TB: '太保产险', DJ: '大家财险', RB: '人保财险', ZL: '中华联合' };
+
+    function renderMappings() {
+      const tbody = document.getElementById('mappingBody');
+      if (mappings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty">暂无映射数据</td></tr>';
+        return;
+      }
+      tbody.innerHTML = mappings.map((m, i) => `
+        <tr>
+          <td class="text-mono"><strong>${m.保司编码}</strong></td>
+          <td>${m.保司}</td>
+          <td>${m.保司险种全称}</td>
+          <td><span class="tag tag-info">${m.系统标准}</span></td>
+          <td><button class="btn" onclick="delMapping(${i})">删除</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function addMapping() {
+      const code = document.getElementById('map保司').value;
+      const name = document.getElementById('map险种全称').value.trim();
+      const std = document.getElementById('map系统').value;
+      if (!name) { alert('请填写保司险种全称'); return; }
+      mappings.push({ 保司编码: code, 保司: CARRIER_NAME[code], 保司险种全称: name, 系统标准: std });
+      localStorage.setItem('nle.insuranceMapping', JSON.stringify(mappings));
+      document.getElementById('map险种全称').value = '';
+      renderMappings();
+      showSaved('已添加映射');
+    }
+
+    function delMapping(i) {
+      if (!confirm('确定删除此映射？')) return;
+      mappings.splice(i, 1);
+      localStorage.setItem('nle.insuranceMapping', JSON.stringify(mappings));
+      renderMappings();
+    }
+
+    // ===== 保司 =====
+    function renderInsurers() {
+      const insurers = getList(STORAGE_KEYS.insuranceCos);
+      const agreements = getList(STORAGE_KEYS.agreements);
+      const tbody = document.getElementById('insurerBody');
+      if (insurers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty">暂无保司数据</td></tr>';
+        return;
+      }
+      tbody.innerHTML = insurers.map(ins => {
+        const count = agreements.filter(a => a.保司 === ins.保司全称).length;
+        return `<tr>
+          <td class="text-mono">${ins.保司编码}</td>
+          <td><strong>${ins.保司全称}</strong></td>
+          <td><span class="tag tag-default">${ins.保司系 || '—'}</span></td>
+          <td>${ins.渠道}</td>
+          <td class="text-mono">${count}</td>
+          <td><button class="btn" onclick="alert('删除保司会级联影响，请先归档协议')">删除</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function addInsurer() {
+      const code = prompt('保司编码（如 PC）');
+      if (!code) return;
+      const name = prompt('保司全称');
+      if (!name) return;
+      const system = prompt('保司系（平安系/太保系/大家系/人保系/中华系）') || '';
+      const channel = prompt('渠道（经纪业务/非经纪）') || '经纪业务';
+      const list = getList(STORAGE_KEYS.insuranceCos);
+      list.unshift({
+        id: Date.now().toString(36),
+        保司编码: code, 保司全称: name, 保司系: system, 渠道: channel
+      });
+      setList(STORAGE_KEYS.insuranceCos, list);
+      renderInsurers();
+      showSaved('已添加保司');
+    }
+
+    // ===== 车辆 =====
+    function renderVehicles() {
+      const policies = getList(STORAGE_KEYS.carPolicies);
+      const map = {};
+      policies.forEach(p => {
+        if (!p.车架号) return;
+        if (!map[p.车架号]) {
+          map[p.车架号] = {
+            车架号: p.车架号, 当前车牌: p.车牌号, 历史车牌: [],
+            车辆品牌: p.车辆品牌, 车系: p.车系, 车型: p.车型,
+            车主: p.车主, 运营商: p.运营商,
+            首次录入: p.createdAt, 最近出现: p.createdAt, 出现次数: 0
+          };
+        }
+        map[p.车架号].出现次数++;
+        if (p.createdAt < map[p.车架号].首次录入) map[p.车架号].首次录入 = p.createdAt;
+        if (p.createdAt > map[p.车架号].最近出现) map[p.车架号].最近出现 = p.createdAt;
+      });
+      const vehicles = Object.values(map);
+      const tbody = document.getElementById('vehicleBody');
+      if (vehicles.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" class="empty">暂无车辆数据（请先录入保单）</td></tr>';
+        return;
+      }
+      tbody.innerHTML = vehicles.map(v => `
+        <tr>
+          <td class="text-mono" style="font-size: 11px;">${v.车架号}</td>
+          <td><strong>${v.当前车牌 || '—'}</strong></td>
+          <td class="text-mono" style="font-size: 11px;">${v.历史车牌.length || '—'}</td>
+          <td>${v.车辆品牌 || '—'}</td>
+          <td>${v.车系 || '—'}</td>
+          <td>${v.车型 || '—'}</td>
+          <td>${v.车主 || '—'}</td>
+          <td>${v.运营商 || '—'}</td>
+          <td class="text-mono" style="font-size: 11px;">${formatDate(v.首次录入)}</td>
+          <td class="text-mono" style="font-size: 11px;">${formatDate(v.最近出现)}</td>
+          <td class="text-mono">${v.出现次数}</td>
+        </tr>
+      `).join('');
+    }
+
+    // ===== 车牌号数据库 =====
+    let plates = JSON.parse(localStorage.getItem('nle.plateDB') || '[]');
+    if (plates.length === 0) {
+      plates = [
+        { 前缀: '粤A', 省份: '广东省', 城市: '广州市', 类型: '省会' },
+        { 前缀: '粤B', 省份: '广东省', 城市: '深圳市', 类型: '经济特区' },
+        { 前缀: '粤C', 省份: '广东省', 城市: '珠海市', 类型: '一般' },
+        { 前缀: '粤D', 省份: '广东省', 城市: '汕头市', 类型: '一般' },
+        { 前缀: '粤E', 省份: '广东省', 城市: '佛山市', 类型: '一般' },
+        { 前缀: '粤F', 省份: '广东省', 城市: '韶关市', 类型: '一般' },
+        { 前缀: '粤G', 省份: '广东省', 城市: '湛江市', 类型: '一般' },
+        { 前缀: '粤H', 省份: '广东省', 城市: '肇庆市', 类型: '一般' },
+        { 前缀: '粤J', 省份: '广东省', 城市: '江门市', 类型: '一般' },
+        { 前缀: '粤K', 省份: '广东省', 城市: '茂名市', 类型: '一般' },
+        { 前缀: '粤L', 省份: '广东省', 城市: '惠州市', 类型: '一般' },
+        { 前缀: '粤M', 省份: '广东省', 城市: '梅州市', 类型: '一般' },
+        { 前缀: '粤N', 省份: '广东省', 城市: '汕尾市', 类型: '一般' },
+        { 前缀: '粤P', 省份: '广东省', 城市: '河源市', 类型: '一般' },
+        { 前缀: '粤Q', 省份: '广东省', 城市: '阳江市', 类型: '一般' },
+        { 前缀: '粤R', 省份: '广东省', 城市: '清远市', 类型: '一般' },
+        { 前缀: '粤S', 省份: '广东省', 城市: '东莞市', 类型: '一般' },
+        { 前缀: '粤T', 省份: '广东省', 城市: '中山市', 类型: '一般' },
+        { 前缀: '粤U', 省份: '广东省', 城市: '潮州市', 类型: '一般' },
+        { 前缀: '粤V', 省份: '广东省', 城市: '揭阳市', 类型: '一般' },
+        { 前缀: '粤W', 省份: '广东省', 城市: '云浮市', 类型: '一般' },
+        { 前缀: '京A', 省份: '北京市', 城市: '北京市', 类型: '直辖市' },
+        { 前缀: '京B', 省份: '北京市', 城市: '北京市', 类型: '直辖市' },
+        { 前缀: '沪A', 省份: '上海市', 城市: '上海市', 类型: '直辖市' },
+        { 前缀: '沪B', 省份: '上海市', 城市: '上海市', 类型: '直辖市' },
+        { 前缀: '苏A', 省份: '江苏省', 城市: '南京市', 类型: '省会' },
+        { 前缀: '浙A', 省份: '浙江省', 城市: '杭州市', 类型: '省会' },
+        { 前缀: '川A', 省份: '四川省', 城市: '成都市', 类型: '省会' },
+        { 前缀: '渝A', 省份: '重庆市', 城市: '重庆市', 类型: '直辖市' },
+        { 前缀: '津A', 省份: '天津市', 城市: '天津市', 类型: '直辖市' }
+      ];
+      localStorage.setItem('nle.plateDB', JSON.stringify(plates));
+    }
+
+    function renderPlates() {
+      const tbody = document.getElementById('plateBody');
+      tbody.innerHTML = plates.map(p => `
+        <tr>
+          <td class="text-mono"><strong>${p.前缀}</strong></td>
+          <td>${p.省份}</td>
+          <td>${p.城市}</td>
+          <td><span class="tag tag-default">${p.类型}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function showSaved(msg) {
+      const d = document.createElement('div');
+      d.className = 'form-saved';
+      d.innerHTML = '✅ ' + msg;
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 2000);
+    }
+
+    renderMappings();
+  </script>
+</body>
+</html>

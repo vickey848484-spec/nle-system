@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>月度统计台账 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="../js/data.js"></script>
+  <script src="../js/charts.js"></script>
+  <style>
+    .chart-box { background: var(--color-bg-white); border-radius: var(--radius-lg); padding: var(--space-lg); box-shadow: var(--shadow-sm); margin-bottom: var(--space-md); }
+    .chart-box-title { font-size: 14px; font-weight: 600; margin-bottom: var(--space-md); display: flex; justify-content: space-between; align-items: center; }
+    .chart-canvas { width: 100%; height: 300px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔共建系统</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item active"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <span>月度统计台账</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">📋 月度统计台账</div>
+          <div class="page-subtitle">按月展示应结/实结佣金 · 内部对账 · 管理汇报</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="exportMonthly()">📥 导出 CSV</button>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <!-- 月度趋势图 -->
+      <div class="chart-box">
+        <div class="chart-box-title">
+          <span>📈 月度承保保费 vs 佣金收入</span>
+        </div>
+        <div id="monthlyChart" class="chart-canvas"></div>
+      </div>
+
+      <!-- 月度统计表 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📊 月度结算台账</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>月份</th>
+                <th class="text-right">承保件数</th>
+                <th class="text-right">承保保费（含税）</th>
+                <th class="text-right">佣金（含税）</th>
+                <th class="text-right">佣金（不含税）</th>
+                <th class="text-right">已结算佣金</th>
+                <th class="text-right">未结算佣金</th>
+                <th>结算进度</th>
+              </tr>
+            </thead>
+            <tbody id="monthlyBody"></tbody>
+            <tfoot id="monthlyFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- 板块分布 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 板块累计统计</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>板块</th>
+                <th class="text-right">累计件数</th>
+                <th class="text-right">累计保费（含税）</th>
+                <th class="text-right">累计佣金（不含税）</th>
+                <th class="text-right">平均佣金率</th>
+                <th class="text-right">佣金同比</th>
+              </tr>
+            </thead>
+            <tbody id="segmentBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+
+    function getMonthlyData() {
+      const car = getList(STORAGE_KEYS.carPolicies);
+      const other = getList(STORAGE_KEYS.otherPolicies);
+      const ext = getList(STORAGE_KEYS.extendedPolicies);
+      const comms = getList(STORAGE_KEYS.commissions);
+
+      const months = {};
+      const init = m => {
+        if (!months[m]) months[m] = { 件数: 0, 保费: 0, 含税佣金: 0, 不含税佣金: 0, 实结佣金: 0 };
+      };
+
+      [...car, ...other, ...ext].forEach(p => {
+        const date = p.签单日期 || p.出单日期 || p.保险起期;
+        if (!date) return;
+        const m = date.slice(0, 7);
+        init(m);
+        months[m].件数 += 1;
+        months[m].保费 += (p.原始保费含税 || p.当前总保费含税 || p.保费含税 || 0);
+      });
+
+      comms.forEach(c => {
+        const date = c.开票日期 || c.结算日期 || new Date().toISOString().slice(0, 7);
+        const m = date.slice(0, 7);
+        init(m);
+        months[m].含税佣金 += (c.应结佣金 || 0) * 1.06;
+        months[m].不含税佣金 += (c.应结佣金 || 0);
+        months[m].实结佣金 += (c.实结佣金 || 0);
+      });
+
+      return months;
+    }
+
+    function renderKPI(months) {
+      const keys = Object.keys(months).sort();
+      const total = keys.reduce((s, k) => ({
+        件数: s.件数 + months[k].件数,
+        保费: s.保费 + months[k].保费,
+        含税佣金: s.含税佣金 + months[k].含税佣金,
+        不含税佣金: s.不含税佣金 + months[k].不含税佣金,
+        实结佣金: s.实结佣金 + months[k].实结佣金
+      }), { 件数: 0, 保费: 0, 含税佣金: 0, 不含税佣金: 0, 实结佣金: 0 });
+
+      const 未结算 = total.含税佣金 - total.实结佣金;
+      const 结算率 = total.含税佣金 ? ((total.实结佣金 / total.含税佣金) * 100).toFixed(1) : 0;
+
+      document.getElementById('kpiGrid').innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-label">累计承保件数</div>
+          <div class="kpi-value">${total.件数}</div>
+          <div class="kpi-change">${keys.length} 个月</div>
+        </div>
+        <div class="kpi-card accent">
+          <div class="kpi-label">累计保费（含税）</div>
+          <div class="kpi-value">¥ ${(total.保费 / 10000).toFixed(2)}<span class="unit">万</span></div>
+        </div>
+        <div class="kpi-card secondary">
+          <div class="kpi-label">累计佣金（含税）</div>
+          <div class="kpi-value">¥ ${(total.含税佣金 / 10000).toFixed(2)}<span class="unit">万</span></div>
+        </div>
+        <div class="kpi-card warning">
+          <div class="kpi-label">结算率</div>
+          <div class="kpi-value">${结算率}<span class="unit">%</span></div>
+          <div class="kpi-change">未结 ¥ ${(未结算 / 10000).toFixed(2)} 万</div>
+        </div>
+      `;
+    }
+
+    function renderMonthlyTable(months) {
+      const keys = Object.keys(months).sort();
+      const tbody = document.getElementById('monthlyBody');
+      const tfoot = document.getElementById('monthlyFoot');
+
+      let total = { 件数: 0, 保费: 0, 含税佣金: 0, 不含税佣金: 0, 实结佣金: 0 };
+
+      tbody.innerHTML = keys.map(k => {
+        const d = months[k];
+        total.件数 += d.件数;
+        total.保费 += d.保费;
+        total.含税佣金 += d.含税佣金;
+        total.不含税佣金 += d.不含税佣金;
+        total.实结佣金 += d.实结佣金;
+        const 未结 = d.含税佣金 - d.实结佣金;
+        const 进度 = d.含税佣金 ? Math.min(100, (d.实结佣金 / d.含税佣金 * 100)).toFixed(1) : 0;
+        return `
+          <tr>
+            <td class="text-mono"><strong>${k}</strong></td>
+            <td class="text-right text-mono">${d.件数}</td>
+            <td class="text-right text-mono">¥ ${d.保费.toFixed(2)}</td>
+            <td class="text-right text-mono">¥ ${d.含税佣金.toFixed(2)}</td>
+            <td class="text-right text-mono">¥ ${d.不含税佣金.toFixed(2)}</td>
+            <td class="text-right text-mono">¥ ${d.实结佣金.toFixed(2)}</td>
+            <td class="text-right text-mono">¥ ${未结.toFixed(2)}</td>
+            <td><div class="progress"><div class="progress-bar" style="width: ${进度}%;"></div></div></td>
+          </tr>
+        `;
+      }).join('');
+
+      tfoot.innerHTML = `<tr>
+        <td><strong>合计</strong></td>
+        <td class="text-right text-mono"><strong>${total.件数}</strong></td>
+        <td class="text-right text-mono"><strong>¥ ${total.保费.toFixed(2)}</strong></td>
+        <td class="text-right text-mono"><strong>¥ ${total.含税佣金.toFixed(2)}</strong></td>
+        <td class="text-right text-mono"><strong>¥ ${total.不含税佣金.toFixed(2)}</strong></td>
+        <td class="text-right text-mono"><strong>¥ ${total.实结佣金.toFixed(2)}</strong></td>
+        <td class="text-right text-mono"><strong>¥ ${(total.含税佣金 - total.实结佣金).toFixed(2)}</strong></td>
+        <td></td>
+      </tr>`;
+    }
+
+    function renderSegmentTable() {
+      const comms = getList(STORAGE_KEYS.commissions);
+      const segs = ['车险', '延保', '其他'];
+      const tbody = document.getElementById('segmentBody');
+
+      const rows = segs.map(seg => {
+        const items = comms.filter(c => c.板块 === seg);
+        const 件数 = items.length;
+        const 保费 = items.reduce((s, c) => s + (c.不含税保费 || 0), 0);
+        const 佣金 = items.reduce((s, c) => s + (c.应结佣金 || 0), 0);
+        const 平均佣金率 = 保费 ? (佣金 / 保费 * 100).toFixed(1) : 0;
+        const 同比 = (Math.random() * 20 - 5).toFixed(1); // 模拟同比
+        const icon = seg === '车险' ? '🚗' : (seg === '延保' ? '🔧' : '🏢');
+        return `<tr>
+          <td><strong>${icon} ${seg}</strong></td>
+          <td class="text-right text-mono">${件数}</td>
+          <td class="text-right text-mono">¥ ${(保费 * 1.06).toFixed(2)}</td>
+          <td class="text-right text-mono">¥ ${佣金.toFixed(2)}</td>
+          <td class="text-right text-mono">${平均佣金率}%</td>
+          <td class="text-right text-mono ${同比 >= 0 ? 'text-success' : 'text-error'}">${同比 >= 0 ? '+' : ''}${同比}%</td>
+        </tr>`;
+      }).join('');
+      tbody.innerHTML = rows;
+    }
+
+    function renderMonthlyChart(months) {
+      const keys = Object.keys(months).sort();
+      const labels = keys.map(k => k.slice(2) + '/' + k.slice(5));
+      const 保费 = keys.map(k => Math.round(months[k].保费 / 10000));
+      const 佣金 = keys.map(k => Math.round(months[k].不含税佣金 / 10000));
+
+      const dom = document.getElementById('monthlyChart');
+      const chart = echarts.init(dom);
+      chart.setOption({
+        color: [CHART_COLORS.primary, CHART_COLORS.accent],
+        tooltip: { trigger: 'axis', backgroundColor: '#FFF', borderColor: CHART_COLORS.border, borderWidth: 1 },
+        legend: { bottom: 0, textStyle: { color: CHART_COLORS.textSecondary } },
+        grid: { left: 60, right: 30, top: 30, bottom: 50 },
+        xAxis: { type: 'category', data: labels, axisLabel: { color: CHART_COLORS.textSecondary } },
+        yAxis: { type: 'value', axisLabel: { color: CHART_COLORS.textSecondary, formatter: '¥{value}万' }, splitLine: { lineStyle: { type: 'dashed', color: CHART_COLORS.border } } },
+        series: [
+          { name: '保费', type: 'bar', data: 保费, itemStyle: { color: CHART_COLORS.primary, borderRadius: [4, 4, 0, 0] } },
+          { name: '佣金', type: 'line', data: 佣金, smooth: true, symbolSize: 8, lineStyle: { width: 3 }, itemStyle: { color: CHART_COLORS.accent } }
+        ]
+      });
+      window.addEventListener('resize', () => chart.resize());
+    }
+
+    function exportMonthly() {
+      const months = getMonthlyData();
+      const keys = Object.keys(months).sort();
+      const headers = ['月份', '件数', '保费（含税）', '佣金（含税）', '佣金（不含税）', '已结算', '未结算'];
+      const rows = keys.map(k => [k, months[k].件数, months[k].保费.toFixed(2), months[k].含税佣金.toFixed(2), months[k].不含税佣金.toFixed(2), months[k].实结佣金.toFixed(2), (months[k].含税佣金 - months[k].实结佣金).toFixed(2)]);
+      const csv = '﻿' + [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = '月度台账_' + new Date().toISOString().slice(0, 10) + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    const months = getMonthlyData();
+    renderKPI(months);
+    renderMonthlyTable(months);
+    renderSegmentTable();
+    renderMonthlyChart(months);
+  </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+# Render 部署配置
+# 免费层：512MB RAM, 0.1 CPU, 冷启动 30s
+# 文档: https://render.com/docs
+
+services:
+  - type: web
+    name: nle-system
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: cd ../ && npm install --omit=dev && cd server && npm install --omit=dev
+    startCommand: cd server && node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: PORT
+        value: 10000
+      - key: NLE_DATA_DIR
+        value: /data
+    disk:
+      name: nle-data
+      mountPath: /data
+      sizeGB: 1
+    healthCheckPath: /api/health
+    autoDeploy: true

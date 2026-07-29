@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>录入佣金结算 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <style>
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md); }
+    .form-item { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 12px; color: var(--color-text-secondary); font-weight: 500; }
+    .form-label .req { color: var(--color-error); margin-left: 2px; }
+    .form-input, .form-select {
+      padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      font-size: 13px; font-family: inherit; outline: none; background: var(--color-bg-white);
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--color-primary); }
+    .form-input.mono { font-family: "SF Mono", Menlo, monospace; }
+    .form-section { margin-bottom: var(--space-md); }
+    .form-section-title {
+      font-size: 14px; font-weight: 600; margin-bottom: var(--space-md);
+      padding-bottom: 6px; border-bottom: 1px solid var(--color-border-light);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .form-section-title::before {
+      content: ''; width: 3px; height: 14px; background: var(--color-primary); border-radius: 2px;
+    }
+    .form-tip { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+    .form-tip.text-primary { color: var(--color-primary); }
+    .form-actions {
+      display: flex; gap: var(--space-sm); justify-content: flex-end;
+      padding-top: var(--space-md); border-top: 1px solid var(--color-border-light);
+    }
+    .form-saved {
+      position: fixed; top: 20px; right: 20px; background: var(--color-success);
+      color: white; padding: 12px 20px; border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg); z-index: 1000;
+    }
+    .calculated {
+      background: var(--color-primary-bg); padding: 8px 12px;
+      border-radius: var(--radius-md); font-family: "SF Mono", monospace;
+      font-weight: 600; color: var(--color-primary-dark);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+            <div class="nav-group">
+        <div class="nav-group-title">理赔共建</div>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔案件列表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表中心</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">系统</div>
+        <a href="#" class="nav-item"><span class="nav-icon">⚙️</span><span>基础数据</span></a>
+        <a href="#" class="nav-item"><span class="nav-icon">📋</span><span>操作日志</span></a>
+      </div>
+      <!-- 用户信息条 -->
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <a href="6-佣金管理.html">佣金管理</a>
+        <span class="separator">/</span>
+        <span>录入佣金结算</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">💰 录入佣金结算</div>
+          <div class="page-subtitle">新能源物流城 · 佣金管理 · 应结/实结/差额</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="window.location='6-佣金管理.html'">取消</button>
+          <button class="btn btn-primary" onclick="submitForm()">💾 保存结算</button>
+        </div>
+      </div>
+
+      <form id="commissionForm" onsubmit="event.preventDefault(); submitForm();">
+
+        <!-- 1. 关联保单 -->
+        <div class="card">
+          <div class="card-title form-section-title">📋 一、关联保单</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">保单号<span class="req">*</span></label>
+              <select name="保单号" id="保单号" class="form-select" required>
+                <option value="">请选择保单</option>
+              </select>
+              <div class="form-tip text-primary" id="policyHint">从承保端拉取</div>
+            </div>
+            <div class="form-item">
+              <label class="form-label">批单号</label>
+              <input type="text" name="批单号" class="form-input mono" readonly>
+            </div>
+            <div class="form-item">
+              <label class="form-label">投保人</label>
+              <input type="text" name="投保人" class="form-input" readonly>
+            </div>
+            <div class="form-item">
+              <label class="form-label">承保保司</label>
+              <input type="text" name="承保保司" class="form-input" readonly>
+            </div>
+            <div class="form-item">
+              <label class="form-label">板块</label>
+              <select name="板块" class="form-select" required>
+                <option value="车险">车险</option>
+                <option value="延保">延保</option>
+                <option value="其他">其他</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 保费与佣金 -->
+        <div class="card">
+          <div class="card-title form-section-title">💵 二、保费与佣金</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">不含税保费<span class="req">*</span></label>
+              <input type="number" name="不含税保费" id="不含税保费" class="form-input mono" step="0.01" required>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">佣金比例<span class="req">*</span></label>
+              <input type="number" name="佣金比例" id="佣金比例" class="form-input mono" step="0.01" min="0" max="1" value="0.25" required>
+              <div class="form-tip text-primary">自动从协议带出，可手动调整</div>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">应结佣金（不含税）</label>
+              <div class="calculated" id="应结佣金">¥ 0.00</div>
+              <div class="form-tip">自动 = 不含税保费 × 佣金比例</div>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">实结佣金（不含税）</label>
+              <input type="number" name="实结佣金" id="实结佣金" class="form-input mono" step="0.01" value="0">
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">差额</label>
+              <div class="calculated" id="差额">¥ 0.00</div>
+              <div class="form-tip">应结 - 实结</div>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">差额原因</label>
+              <input type="text" name="差额原因" class="form-input" placeholder="如: 保司手续费、税率差、调整单等">
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 结算状态 -->
+        <div class="card">
+          <div class="card-title form-section-title">📅 三、结算状态</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">结算单号</label>
+              <input type="text" name="结算单号" id="结算单号" class="form-input mono" placeholder="如已对账完成则填写">
+            </div>
+            <div class="form-item">
+              <label class="form-label">结算状态<span class="req">*</span></label>
+              <select name="结算状态" class="form-select" required>
+                <option value="待结算">待结算</option>
+                <option value="待开票">待开票</option>
+                <option value="已开票">已开票</option>
+                <option value="已入账">已入账</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">开票日期</label>
+              <input type="date" name="开票日期" class="form-input">
+            </div>
+            <div class="form-item">
+              <label class="form-label">回款日期</label>
+              <input type="date" name="回款日期" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- 操作 -->
+        <div class="card">
+          <div class="form-actions">
+            <button type="button" class="btn" onclick="window.location='6-佣金管理.html'">取消</button>
+            <button type="submit" class="btn btn-primary">💾 保存结算</button>
+          </div>
+        </div>
+
+      </form>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+    requireAuth();
+
+    function recalc() {
+      const premium = parseFloat(document.getElementById('不含税保费').value) || 0;
+      const ratio = parseFloat(document.getElementById('佣金比例').value) || 0;
+      const 实结 = parseFloat(document.getElementById('实结佣金').value) || 0;
+      const 应结 = premium * ratio;
+      document.getElementById('应结佣金').textContent = '¥ ' + 应结.toFixed(2);
+      const 差 = 应结 - 实结;
+      const 差额El = document.getElementById('差额');
+      差额El.textContent = '¥ ' + 差.toFixed(2);
+      差额El.style.background = Math.abs(差) < 0.01 ? 'var(--color-primary-bg)' : '#FFEBEE';
+      差额El.style.color = Math.abs(差) < 0.01 ? 'var(--color-primary-dark)' : 'var(--color-error)';
+    }
+
+    // 加载保单选项
+    function loadPolicies() {
+      const select = document.getElementById('保单号');
+      // 合并车险 + 非车险 + 延保
+      const car = getList(STORAGE_KEYS.carPolicies);
+      const other = getList(STORAGE_KEYS.otherPolicies);
+      const ext = getList(STORAGE_KEYS.extendedPolicies);
+      const all = [...car, ...other, ...ext];
+
+      all.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.保单号;
+        opt.textContent = p.保单号 + ' - ' + (p.投保人 || '');
+        opt.dataset.policy = JSON.stringify(p);
+        select.appendChild(opt);
+      });
+    }
+
+    document.getElementById('保单号').addEventListener('change', e => {
+      const opt = e.target.selectedOptions[0];
+      if (opt && opt.dataset.policy) {
+        const p = JSON.parse(opt.dataset.policy);
+        document.querySelector('input[name="批单号"]').value = p.批单号 || '';
+        document.querySelector('input[name="投保人"]').value = p.投保人 || '';
+        document.querySelector('input[name="承保保司"]').value = p.承保保司 || '';
+
+        // 自动带入保费（不含税）
+        const 含税 = p.原始保费含税 || p.保费含税 || 0;
+        document.getElementById('不含税保费').value = (含税 / 1.06).toFixed(2);
+
+        // 从协议查找佣金比例（默认 25%）
+        const agreements = getList(STORAGE_KEYS.agreements);
+        const ag = agreements.find(a => a.保司 === p.承保保司 || a.协议乙方 === p.承保保司);
+        if (ag && ag.佣金比例) {
+          const ratio = parseFloat(ag.佣金比例.replace('%', '')) / 100;
+          document.getElementById('佣金比例').value = ratio;
+        }
+
+        // 自动生成结算单号（如果是待结算状态）
+        document.getElementById('结算单号').value = 'JS-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+
+        recalc();
+      }
+    });
+
+    document.getElementById('不含税保费').addEventListener('input', recalc);
+    document.getElementById('佣金比例').addEventListener('input', recalc);
+    document.getElementById('实结佣金').addEventListener('input', recalc);
+
+    function showSaved() {
+      const d = document.createElement('div');
+      d.className = 'form-saved';
+      d.innerHTML = '✅ 佣金结算已保存！';
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 2000);
+    }
+
+    function submitForm() {
+      const form = document.getElementById('commissionForm');
+      const data = {};
+      new FormData(form).forEach((v, k) => { data[k] = v; });
+
+      if (!data.保单号) {
+        alert('请选择保单');
+        return;
+      }
+
+      data.不含税保费 = parseFloat(data.不含税保费) || 0;
+      data.佣金比例 = parseFloat(data.佣金比例) || 0;
+      data.应结佣金 = data.不含税保费 * data.佣金比例;
+      data.实结佣金 = parseFloat(data.实结佣金) || 0;
+
+      addItem(STORAGE_KEYS.commissions, data);
+      showSaved();
+      setTimeout(() => window.location = '6-佣金管理.html', 800);
+    }
+
+    loadPolicies();
+    recalc();
+  </script>
+</body>
+</html>

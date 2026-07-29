@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>车险承保与理赔 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="../js/data.js"></script>
+  <script src="../js/charts.js"></script>
+  <style>
+    .chart-box { background: var(--color-bg-white); border-radius: var(--radius-lg); padding: var(--space-lg); box-shadow: var(--shadow-sm); margin-bottom: var(--space-md); }
+    .chart-box-title { font-size: 14px; font-weight: 600; margin-bottom: var(--space-md); display: flex; justify-content: space-between; align-items: center; }
+    .chart-canvas { width: 100%; height: 280px; }
+    .chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+    @media (max-width: 968px) { .chart-grid-2 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item active"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+            <div class="nav-group">
+        <div class="nav-group-title">理赔共建</div>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔案件列表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表中心</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">系统</div>
+        <a href="#" class="nav-item"><span class="nav-icon">⚙️</span><span>基础数据</span></a>
+        <a href="#" class="nav-item"><span class="nav-icon">📋</span><span>操作日志</span></a>
+      </div>
+      <!-- 用户信息条 -->
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <span>车险承保与理赔</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">车险承保与理赔</div>
+          <div class="page-subtitle">车辆保单全生命周期 · 7 张业务报表 · 理赔案件跟踪</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn">📥 导入 Excel</button>
+          <button class="btn">📊 报表中心</button>
+          <a href="录入表单.html" class="btn btn-primary">+ 录入保单</a>
+        </div>
+      </div>
+
+      <!-- 关键指标（实时计算） -->
+      <div class="kpi-grid" id="kpiGrid">
+        <!-- JS 渲染 -->
+      </div>
+
+      <!-- 主表格 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 车险保单列表</div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn" onclick="exportCSV()">📤 导出 CSV</button>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <input type="text" id="searchInput" class="search-input" placeholder="搜索车牌号 / 保单号 / 投保人 / VIN 码">
+          <select id="filterCarrier" class="filter-select">
+            <option value="">全部保司</option>
+            <option>平安产险</option>
+            <option>太保产险</option>
+            <option>大家财险</option>
+            <option>人保财险</option>
+            <option>中华联合</option>
+          </select>
+          <select id="filterChannel" class="filter-select">
+            <option value="">全部渠道</option>
+            <option value="经纪">经纪业务</option>
+            <option value="非经纪">非经纪</option>
+          </select>
+          <select id="filterStatus" class="filter-select">
+            <option value="">全部状态</option>
+            <option>已承保</option>
+            <option>退保</option>
+            <option>批增</option>
+            <option>批减</option>
+          </select>
+          <select id="filterInsurance" class="filter-select">
+            <option value="">全部险种</option>
+            <option>交强险</option>
+            <option>商业险</option>
+            <option>驾意险</option>
+          </select>
+          <button class="btn" onclick="resetFilters()">🔄 重置</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>保单号</th>
+                <th>批单号</th>
+                <th>车牌号</th>
+                <th>车架号</th>
+                <th>投保人</th>
+                <th>承保保司</th>
+                <th>渠道</th>
+                <th>起保日期</th>
+                <th>终保日期</th>
+                <th class="text-right">原始保费（含税）</th>
+                <th class="text-right">满期保费</th>
+                <th>状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="policyTableBody">
+              <!-- JS 渲染 -->
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-md); font-size: 13px; color: var(--color-text-secondary);">
+          <div id="paginationInfo">共 0 条记录</div>
+        </div>
+      </div>
+
+      <!-- 图表 -->
+      <div class="chart-grid-2">
+        <div class="chart-box">
+          <div class="chart-box-title">
+            <span>📊 保司承保件数分布</span>
+          </div>
+          <div id="carrierBar" class="chart-canvas"></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-box-title">
+            <span>🥧 险种占比</span>
+          </div>
+          <div id="insurancePie" class="chart-canvas"></div>
+        </div>
+      </div>
+
+      <!-- 报表中心入口 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📊 业务报表中心</div>
+          <a href="#" class="btn">查看全部</a>
+        </div>
+        <div class="module-grid">
+          <div class="module-card warning">
+            <div class="module-card-icon">📋</div>
+            <div class="module-card-title">表 1：车险整体数据报表</div>
+            <div class="module-card-desc">按营运/非营运分类，含保费、件数、赔付率</div>
+          </div>
+          <div class="module-card secondary">
+            <div class="module-card-icon">📈</div>
+            <div class="module-card-title">表 3：理赔累计数据</div>
+            <div class="module-card-desc">已决 + 未决 + 销案金额 / 满期保费</div>
+          </div>
+          <div class="module-card">
+            <div class="module-card-icon">🔍</div>
+            <div class="module-card-title">表 4：理赔专项数据</div>
+            <div class="module-card-desc">按险种、车牌归属省份细分</div>
+          </div>
+          <div class="module-card accent">
+            <div class="module-card-icon">📊</div>
+            <div class="module-card-title">表 7：考核报表</div>
+            <div class="module-card-desc">按业务端负责人、项目分组</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // 初始化种子
+    seedIfEmpty();
+    requireAuth();
+
+    const session = getSession();
+    const perms = getPermissions(session.role);
+
+    // 权限提示条（仅运营专员）
+    if (!perms.canViewAll && session.role === 'operator') {
+      const scope = session.负责范围 || {};
+      const scopeText = [
+        scope.保司 && scope.保司.length ? '保司：' + scope.保司.join('/') : '',
+        scope.区域 && scope.区域.length ? '区域：' + scope.区域.join('/') : ''
+      ].filter(Boolean).join(' · ') || '全部';
+      const banner = document.createElement('div');
+      banner.className = 'banner';
+      banner.style.background = 'linear-gradient(90deg, var(--color-accent), var(--color-warning))';
+      banner.innerHTML = `<span class="banner-icon">🔒</span><span>您是 <strong>${perms.label}</strong>，仅可查看负责范围（${scopeText}）的数据${perms.canDelete ? '' : ' · 无删除权限'}</span>`;
+      const main = document.querySelector('.main');
+      const breadcrumb = main.querySelector('.breadcrumb');
+      main.insertBefore(banner, breadcrumb);
+    }
+
+    let allPolicies = [];
+
+    function loadData() {
+      let list = getList(STORAGE_KEYS.carPolicies);
+      // 数据范围过滤（仅运营专员生效）
+      if (session.role === 'operator') {
+        const scope = session.负责范围 || {};
+        if (scope.保司 && scope.保司.length) {
+          list = list.filter(p => scope.保司.includes(p.承保保司));
+        }
+        if (scope.区域 && scope.区域.length) {
+          list = list.filter(p => scope.区域.some(r => p.运营城市 && p.运营城市.includes(r)));
+        }
+      }
+      allPolicies = list;
+    }
+
+    function statusTag(status) {
+      const map = {
+        '已承保': '<span class="tag tag-success">已承保</span>',
+        '退保': '<span class="tag tag-error">退保</span>',
+        '批增': '<span class="tag tag-warning">批增</span>',
+        '批减': '<span class="tag tag-warning">批减</span>'
+      };
+      return map[status] || '<span class="tag tag-default">' + status + '</span>';
+    }
+
+    function channelTag(channel) {
+      if (channel === '经纪') return '<span class="tag tag-info">经纪</span>';
+      if (channel === '非经纪') return '<span class="tag tag-default">非经纪</span>';
+      return channel;
+    }
+
+    function renderTable() {
+      const q = (document.getElementById('searchInput').value || '').toLowerCase();
+      const carrier = document.getElementById('filterCarrier').value;
+      const channel = document.getElementById('filterChannel').value;
+      const status = document.getElementById('filterStatus').value;
+      const insurance = document.getElementById('filterInsurance').value;
+
+      const filtered = allPolicies.filter(p => {
+        if (q && ![p.保单号, p.车牌号, p.车架号, p.投保人, p.被保险人, p.车主].join(' ').toLowerCase().includes(q)) return false;
+        if (carrier && p.承保保司 !== carrier) return false;
+        if (channel && p.渠道 !== channel) return false;
+        if (status && p.保单状态 !== status) return false;
+        if (insurance && p.具体险种 !== insurance) return false;
+        return true;
+      });
+
+      const tbody = document.getElementById('policyTableBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="13" class="empty"><div class="empty-icon">📭</div>暂无数据</td></tr>';
+      } else {
+        tbody.innerHTML = filtered.map(p => `
+          <tr>
+            <td class="text-mono">${p.保单号}</td>
+            <td class="text-mono">${p.批单号 || '—'}</td>
+            <td><strong>${p.车牌号}</strong></td>
+            <td class="text-mono" style="font-size: 11px;">${p.车架号}</td>
+            <td>${p.投保人}</td>
+            <td>${p.承保保司}</td>
+            <td>${channelTag(p.渠道)}</td>
+            <td>${formatDate(p.起保日期)}</td>
+            <td>${formatDate(p.终保日期)}</td>
+            <td class="text-right text-mono">${formatMoneyNoSymbol(p.原始保费含税)}</td>
+            <td class="text-right text-mono">${formatMoneyNoSymbol(maturedPremium(p))}</td>
+            <td>${statusTag(p.保单状态)}</td>
+            <td>
+              ${perms.canDelete ? `<button class="btn" onclick="deletePolicy('${p.id}')">删除</button>` : ''}
+              <a href="录入表单.html?id=${p.id}" class="btn">查看</a>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      document.getElementById('paginationInfo').textContent =
+        `共 ${allPolicies.length} 条记录 · 当前显示 ${filtered.length} 条`;
+    }
+
+    function renderKPI() {
+      const total = allPolicies.length;
+      const 生效中 = allPolicies.filter(p => p.保单状态 === '已承保').length;
+      const totalPremium = allPolicies.reduce((sum, p) => sum + (p.当前总保费含税 || 0), 0);
+      const 批改 = allPolicies.filter(p => p.保单状态 === '批增' || p.保单状态 === '批减').length;
+
+      const html = `
+        <div class="kpi-card">
+          <div class="kpi-label">承保保单数</div>
+          <div class="kpi-value">${total}</div>
+          <div class="kpi-change up">已承保 ${生效中} 单</div>
+        </div>
+        <div class="kpi-card accent">
+          <div class="kpi-label">当前总保费（含税）</div>
+          <div class="kpi-value">¥ ${(totalPremium / 10000).toFixed(2)}<span class="unit">万</span></div>
+          <div class="kpi-change">含批改 ${批改} 单</div>
+        </div>
+        <div class="kpi-card secondary">
+          <div class="kpi-label">经纪业务占比</div>
+          <div class="kpi-value">${total ? Math.round(allPolicies.filter(p => p.渠道 === '经纪').length / total * 100) : 0}<span class="unit">%</span></div>
+          <div class="kpi-change">${allPolicies.filter(p => p.渠道 === '经纪').length} / ${total} 单</div>
+        </div>
+        <div class="kpi-card warning">
+          <div class="kpi-label">数据来源</div>
+          <div class="kpi-value" style="font-size: 16px;">localStorage</div>
+          <div class="kpi-change">实时计算</div>
+        </div>
+      `;
+      document.getElementById('kpiGrid').innerHTML = html;
+    }
+
+    function deletePolicy(id) {
+      if (!confirm('确定删除这条保单？此操作不可撤销。')) return;
+      deleteItem(STORAGE_KEYS.carPolicies, id);
+      loadData();
+      renderTable();
+      renderKPI();
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('filterCarrier').value = '';
+      document.getElementById('filterChannel').value = '';
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterInsurance').value = '';
+      renderTable();
+    }
+
+    function exportCSV() {
+      const headers = ['保单号', '批单号', '车牌号', '车架号', '投保人', '承保保司', '渠道', '起保日期', '终保日期', '原始保费含税', '保单状态'];
+      const rows = allPolicies.map(p => [p.保单号, p.批单号 || '', p.车牌号, p.车架号, p.投保人, p.承保保司, p.渠道, p.起保日期, p.终保日期, p.原始保费含税, p.保单状态]);
+      const csv = '﻿' + [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = '车险保单_' + new Date().toISOString().slice(0, 10) + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // 事件绑定
+    document.getElementById('searchInput').addEventListener('input', renderTable);
+    document.getElementById('filterCarrier').addEventListener('change', renderTable);
+    document.getElementById('filterChannel').addEventListener('change', renderTable);
+    document.getElementById('filterStatus').addEventListener('change', renderTable);
+    document.getElementById('filterInsurance').addEventListener('change', renderTable);
+
+    // 初始化
+    loadData();
+    renderKPI();
+    renderTable();
+
+    // 图表
+    function renderCarrierBar() {
+      const data = {};
+      allPolicies.forEach(p => {
+        data[p.承保保司] = (data[p.承保保司] || 0) + 1;
+      });
+      const items = Object.entries(data).map(([k, v]) => ({ name: k, value: v }));
+      if (items.length === 0) {
+        document.getElementById('carrierBar').innerHTML = '<div class="empty"><div class="empty-icon">📊</div>暂无数据</div>';
+        return;
+      }
+      barChart('carrierBar', {
+        xData: items.map(i => i.name),
+        yData: items.map(i => i.value)
+      });
+    }
+
+    function renderInsurancePie() {
+      const data = {};
+      allPolicies.forEach(p => {
+        const k = p.具体险种 || '其他';
+        data[k] = (data[k] || 0) + 1;
+      });
+      const items = Object.keys(data).map(k => ({ name: k, value: data[k] }));
+      if (items.length === 0) {
+        document.getElementById('insurancePie').innerHTML = '<div class="empty"><div class="empty-icon">📊</div>暂无数据</div>';
+        return;
+      }
+      pieChart('insurancePie', { data: items });
+    }
+
+    renderCarrierBar();
+    renderInsurancePie();
+  </script>
+</body>
+</html>

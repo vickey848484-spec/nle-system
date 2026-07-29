@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>监管报表 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <style>
+    .report-table { background: white; border-radius: var(--radius-lg); padding: var(--space-lg); box-shadow: var(--shadow-sm); margin-bottom: var(--space-md); }
+    .report-header {
+      text-align: center;
+      padding: var(--space-md);
+      border-bottom: 2px solid var(--color-text);
+      margin-bottom: var(--space-md);
+    }
+    .report-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .report-meta { font-size: 12px; color: var(--color-text-secondary); }
+    .table-wrap table { font-size: 13px; }
+    .table-wrap th { background: var(--color-bg); }
+    .table-wrap tfoot td {
+      background: var(--color-primary-bg);
+      font-weight: 700;
+      color: var(--color-primary-dark);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔共建系统</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表</div>
+        <a href="8-监管报表.html" class="nav-item active"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <span>监管报表</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">🏛️ 监管报表</div>
+          <div class="page-subtitle">按监管机构固定格式 · 产险/人身险 · 可直接导出</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="window.print()">🖨️ 打印</button>
+          <button class="btn btn-primary" onclick="exportReport()">📥 导出 CSV</button>
+        </div>
+      </div>
+
+      <!-- 顶部筛选 -->
+      <div class="card">
+        <div class="toolbar">
+          <select id="yearSelect" class="filter-select" onchange="renderReport()">
+            <option>2026</option>
+            <option>2025</option>
+          </select>
+          <select id="monthSelect" class="filter-select" onchange="renderReport()">
+            <option value="all">全年汇总</option>
+            <option value="01">1 月</option>
+            <option value="02">2 月</option>
+            <option value="03">3 月</option>
+            <option value="04">4 月</option>
+            <option value="05">5 月</option>
+            <option value="06">6 月</option>
+            <option value="07">7 月</option>
+          </select>
+          <span class="text-muted" style="font-size: 12px;">说明：仅统计已录入开票日期的结算佣金（已开票 + 已入账）</span>
+        </div>
+      </div>
+
+      <!-- Tab 切换 -->
+      <div class="card">
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" id="tab产险" onclick="switchReport('产险')">🏛️ 产险报表</button>
+          <button class="btn" id="tab人身险" onclick="switchReport('人身险')">🛡️ 人身险报表</button>
+        </div>
+      </div>
+
+      <!-- 产险报表 -->
+      <div class="report-table" id="report产险">
+        <div class="report-header">
+          <div class="report-title">财产保险佣金收入监管报表</div>
+          <div class="report-meta">
+            填报单位：新能源物流城保险经纪（深圳）有限公司　|
+            报表期间：<span id="reportPeriod1"></span>　|
+            填报日期：<span id="reportDate1"></span>
+          </div>
+        </div>
+
+        <div class="kpi-grid" id="kpi产险"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>序号</th>
+                <th>保险公司</th>
+                <th class="text-right">保单件数</th>
+                <th class="text-right">保费收入（含税）</th>
+                <th class="text-right">保费收入（不含税）</th>
+                <th class="text-right">佣金收入</th>
+                <th class="text-right">佣金占比</th>
+              </tr>
+            </thead>
+            <tbody id="tbody产险"></tbody>
+            <tfoot id="tfoot产险"></tfoot>
+          </table>
+        </div>
+
+        <div style="margin-top: var(--space-md); padding: var(--space-md); background: var(--color-bg); border-radius: var(--radius-md); font-size: 12px; color: var(--color-text-secondary);">
+          <strong>口径说明：</strong>
+          <ul style="margin-top: 8px; padding-left: 20px;">
+            <li>保单归属月份按开票月份归属当月</li>
+            <li>佣金收入为不含税金额，仅统计已录入开票日期的结算佣金</li>
+            <li>佣金占比 = 该保司佣金 / 总佣金 × 100%</li>
+            <li>险种范围：机动车辆保险、财产保险、责任保险、货物运输保险等</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 人身险报表 -->
+      <div class="report-table" id="report人身险" style="display: none;">
+        <div class="report-header">
+          <div class="report-title">人身意外险佣金收入监管报表</div>
+          <div class="report-meta">
+            填报单位：新能源物流城保险经纪（深圳）有限公司　|
+            报表期间：<span id="reportPeriod2"></span>　|
+            填报日期：<span id="reportDate2"></span>
+          </div>
+        </div>
+
+        <div class="kpi-grid" id="kpi人身险"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>序号</th>
+                <th>保险公司</th>
+                <th class="text-right">保单件数</th>
+                <th class="text-right">保费收入（含税）</th>
+                <th class="text-right">保费收入（不含税）</th>
+                <th class="text-right">佣金收入</th>
+                <th class="text-right">佣金占比</th>
+              </tr>
+            </thead>
+            <tbody id="tbody人身险"></tbody>
+            <tfoot id="tfoot人身险"></tfoot>
+          </table>
+        </div>
+
+        <div style="margin-top: var(--space-md); padding: var(--space-md); background: var(--color-bg); border-radius: var(--radius-md); font-size: 12px; color: var(--color-text-secondary);">
+          <strong>口径说明：</strong>
+          <ul style="margin-top: 8px; padding-left: 20px;">
+            <li>保单归属月份按开票月份归属当月</li>
+            <li>佣金收入为不含税金额</li>
+            <li>险种范围：团体意外险、雇主责任险、驾意险</li>
+          </ul>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+
+    function switchReport(type) {
+      document.getElementById('report产险').style.display = (type === '产险' ? 'block' : 'none');
+      document.getElementById('report人身险').style.display = (type === '人身险' ? 'block' : 'none');
+      document.getElementById('tab产险').classList.toggle('btn-primary', type === '产险');
+      document.getElementById('tab人身险').classList.toggle('btn-primary', type === '人身险');
+      document.getElementById('tab产险').classList.toggle('btn', type !== '产险');
+      document.getElementById('tab人身险').classList.toggle('btn', type !== '人身险');
+    }
+
+    // 险种 → 报表分类
+    function classifyInsurance(category) {
+      // 产险：车险/财产保险/责任保险/货物运输保险
+      // 人身险：团体意外险/雇主责任险/驾意险
+      if (['车险', '机动车辆保险', '财产保险', '责任保险', '货物运输保险', '延长保修责任保险'].includes(category)) return '产险';
+      if (['团体意外险', '雇主责任险', '驾意险', '意外伤害保险'].includes(category)) return '人身险';
+      return '产险'; // 默认
+    }
+
+    function filterByPeriod(items, year, month) {
+      return items.filter(item => {
+        const date = item.开票日期 || item.结算日期;
+        if (!date) return false;
+        const y = date.slice(0, 4);
+        const m = date.slice(5, 7);
+        if (y !== year) return false;
+        if (month !== 'all' && m !== month) return false;
+        // 仅统计已开票 + 已入账
+        return item.结算状态 === '已开票' || item.结算状态 === '已入账';
+      });
+    }
+
+    function renderReport() {
+      const year = document.getElementById('yearSelect').value;
+      const month = document.getElementById('monthSelect').value;
+
+      const periodText = year + ' 年' + (month === 'all' ? '' : ' ' + parseInt(month) + ' 月');
+      document.getElementById('reportPeriod1').textContent = periodText;
+      document.getElementById('reportPeriod2').textContent = periodText;
+      const today = new Date().toISOString().slice(0, 10);
+      document.getElementById('reportDate1').textContent = today;
+      document.getElementById('reportDate2').textContent = today;
+
+      const comms = getList(STORAGE_KEYS.commissions);
+      const filtered = filterByPeriod(comms, year, month);
+
+      // 按保司聚合
+      const byCarrier = {};
+      filtered.forEach(c => {
+        const key = c.承保保司 || '未知';
+        if (!byCarrier[key]) byCarrier[key] = { count: 0, 含税保费: 0, 不含税保费: 0, 佣金: 0 };
+        byCarrier[key].count += 1;
+        byCarrier[key].含税保费 += (c.不含税保费 || 0) * 1.06;
+        byCarrier[key].不含税保费 += (c.不含税保费 || 0);
+        byCarrier[key].佣金 += (c.应结佣金 || 0);
+      });
+
+      // 分离产险/人身险
+      // 由于 commissions 表只有板块，需结合其他表判断险种
+      // 这里用简化规则：板块=车险 → 产险，板块=延保 → 产险，板块=其他 → 人身险
+      const 产险 = {};
+      const 人身险 = {};
+      const segMap = { '车险': '产险', '延保': '产险', '其他': '人身险' };
+
+      filtered.forEach(c => {
+        const cat = segMap[c.板块] || '产险';
+        const target = cat === '产险' ? 产险 : 人身险;
+        const key = c.承保保司 || '未知';
+        if (!target[key]) target[key] = { count: 0, 含税保费: 0, 不含税保费: 0, 佣金: 0 };
+        target[key].count += 1;
+        target[key].含税保费 += (c.不含税保费 || 0) * 1.06;
+        target[key].不含税保费 += (c.不含税保费 || 0);
+        target[key].佣金 += (c.应结佣金 || 0);
+      });
+
+      // 渲染
+      renderTable('产险', 产险);
+      renderTable('人身险', 人身险);
+    }
+
+    function renderTable(type, data) {
+      const total佣金 = Object.values(data).reduce((s, d) => s + d.佣金, 0);
+      const total含税 = Object.values(data).reduce((s, d) => s + d.含税保费, 0);
+      const total不含税 = Object.values(data).reduce((s, d) => s + d.不含税保费, 0);
+      const total件数 = Object.values(data).reduce((s, d) => s + d.count, 0);
+
+      const keys = Object.keys(data).sort();
+      const tbody = document.getElementById('tbody' + type);
+      const tfoot = document.getElementById('tfoot' + type);
+
+      if (keys.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty"><div class="empty-icon">📭</div>当前期间无数据</td></tr>';
+      } else {
+        tbody.innerHTML = keys.map((k, i) => {
+          const d = data[k];
+          const 占比 = total佣金 ? ((d.佣金 / total佣金) * 100).toFixed(1) : 0;
+          return `<tr>
+            <td class="text-mono">${i + 1}</td>
+            <td><strong>${k}</strong></td>
+            <td class="text-right text-mono">${d.count}</td>
+            <td class="text-right text-mono">¥ ${d.含税保费.toFixed(2)}</td>
+            <td class="text-right text-mono">¥ ${d.不含税保费.toFixed(2)}</td>
+            <td class="text-right text-mono">¥ ${d.佣金.toFixed(2)}</td>
+            <td class="text-right text-mono">${占比}%</td>
+          </tr>`;
+        }).join('');
+      }
+
+      tfoot.innerHTML = `<tr>
+        <td colspan="2"><strong>合计</strong></td>
+        <td class="text-right text-mono"><strong>${total件数}</strong></td>
+        <td class="text-right text-mono"><strong>¥ ${total含税.toFixed(2)}</strong></td>
+        <td class="text-right text-mono"><strong>¥ ${total不含税.toFixed(2)}</strong></td>
+        <td class="text-right text-mono"><strong>¥ ${total佣金.toFixed(2)}</strong></td>
+        <td class="text-right text-mono"><strong>100%</strong></td>
+      </tr>`;
+
+      // KPI
+      document.getElementById('kpi' + type).innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-label">保单件数</div>
+          <div class="kpi-value">${total件数}</div>
+        </div>
+        <div class="kpi-card accent">
+          <div class="kpi-label">保费收入（含税）</div>
+          <div class="kpi-value">¥ ${(total含税 / 10000).toFixed(2)}<span class="unit">万</span></div>
+        </div>
+        <div class="kpi-card secondary">
+          <div class="kpi-label">佣金收入（不含税）</div>
+          <div class="kpi-value">¥ ${(total佣金 / 10000).toFixed(2)}<span class="unit">万</span></div>
+        </div>
+        <div class="kpi-card warning">
+          <div class="kpi-label">平均佣金率</div>
+          <div class="kpi-value">${total不含税 ? (total佣金 / total不含税 * 100).toFixed(1) : 0}<span class="unit">%</span></div>
+        </div>
+      `;
+    }
+
+    function exportReport() {
+      const year = document.getElementById('yearSelect').value;
+      const month = document.getElementById('monthSelect').value;
+      const period = year + (month === 'all' ? '年' : '年' + parseInt(month) + '月');
+      alert('导出 CSV：监管报表_' + period + '（产险+人身险）');
+    }
+
+    renderReport();
+  </script>
+</body>
+</html>

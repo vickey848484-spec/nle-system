@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>协议管理 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item active"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+            <div class="nav-group">
+        <div class="nav-group-title">理赔共建</div>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔案件列表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表中心</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">系统</div>
+        <a href="#" class="nav-item"><span class="nav-icon">⚙️</span><span>基础数据</span></a>
+        <a href="#" class="nav-item"><span class="nav-icon">📋</span><span>操作日志</span></a>
+      </div>
+      <!-- 用户信息条 -->
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <span>协议管理</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">协议管理</div>
+          <div class="page-subtitle">保司协议全生命周期 · 框架/结算/补充协议 · 到期预警</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="exportCSV()">📥 导出协议清单</button>
+          <a href="协议录入.html" class="btn btn-primary">+ 发起新协议</a>
+        </div>
+      </div>
+
+      <!-- KPI（实时计算） -->
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <!-- 第一层：保司列表 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏢 保司总览列表</div>
+          <div style="display: flex; gap: 8px;">
+            <select class="filter-select">
+              <option>全部协议状态</option>
+              <option>生效中</option>
+              <option>即将到期</option>
+              <option>已过期</option>
+              <option>待确认</option>
+              <option>已终止</option>
+            </select>
+            <select class="filter-select">
+              <option>全部保司系</option>
+              <option>平安系</option>
+              <option>太保系</option>
+              <option>大家系</option>
+              <option>人保系</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>序号</th>
+                <th>保险公司全称</th>
+                <th>保司系</th>
+                <th>渠道</th>
+                <th>最新协议编号</th>
+                <th>最新协议状态</th>
+                <th>到期日</th>
+                <th>距到期</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="agreementTableBody"></tbody>
+          </table>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-md); font-size: 13px; color: var(--color-text-secondary);">
+          <div id="agreementInfo">共 0 条记录</div>
+        </div>
+      </div>
+
+      <!-- 第二层：协议时间轴示例（点击 PICC 后展开） -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">⏰ PICC 财产保险股份有限公司深圳分公司</div>
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">协议时间轴 · 按到期日倒序排列</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn">返回保司列表</button>
+            <button class="btn">编辑主体信息</button>
+            <button class="btn btn-primary">+ 发起新协议</button>
+          </div>
+        </div>
+
+        <div class="timeline">
+
+          <div class="timeline-item warn">
+            <div class="timeline-card">
+              <div class="timeline-card-header">
+                <div>
+                  <span class="timeline-card-code">PC-JSXY-2026-001</span>
+                  <span class="tag tag-warning" style="margin-left: 8px;">🟡 即将到期</span>
+                </div>
+                <div>
+                  <button class="btn">续签</button>
+                  <button class="btn">作废</button>
+                </div>
+              </div>
+              <div class="timeline-card-meta">
+                【结算协议】· 有效期：2026-01-01 至 2026-12-31 · 归档日期：2026-01-05
+              </div>
+              <div style="margin-top: var(--space-sm); font-size: 13px;">
+                <div style="color: var(--color-warning); margin-bottom: 4px;">⏰ 该协议将于 45 天后到期，请尽快处理续签。</div>
+                <div class="kv-list" style="margin-top: 8px;">
+                  <div class="kv-item"><span class="kv-label">业务板块</span><span class="kv-value">车险+非车险</span></div>
+                  <div class="kv-item"><span class="kv-label">结算周期</span><span class="kv-value">月结（次月15日前）</span></div>
+                  <div class="kv-item"><span class="kv-label">佣金比例</span><span class="kv-value">25%</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-card">
+              <div class="timeline-card-header">
+                <div>
+                  <span class="timeline-card-code">PC-JSXY-2025-001</span>
+                  <span class="tag tag-success" style="margin-left: 8px;">🟢 生效中</span>
+                </div>
+                <div>
+                  <button class="btn">查看</button>
+                </div>
+              </div>
+              <div class="timeline-card-meta">
+                【结算协议】· 有效期：2025-01-01 至 2025-12-31 · 已过期
+              </div>
+              <div style="margin-top: var(--space-sm);">
+                <div class="timeline-card" style="background: var(--color-bg); margin-left: 0;">
+                  <div class="timeline-card-header">
+                    <div>
+                      <span class="timeline-card-code">PC-JSXY-2025-001-BCXY-01</span>
+                      <span class="tag tag-success" style="margin-left: 8px;">🟢 补充协议</span>
+                    </div>
+                  </div>
+                  <div class="timeline-card-meta">补充协议 · 2025-06-15 签订 · 调整财产险部分条款</div>
+                </div>
+                <div class="timeline-card" style="background: var(--color-bg); margin-left: 0; margin-top: 8px;">
+                  <div class="timeline-card-header">
+                    <div>
+                      <span class="timeline-card-code">PC-JSXY-2025-001-BCXY-02</span>
+                      <span class="tag tag-success" style="margin-left: 8px;">🟢 补充协议</span>
+                    </div>
+                  </div>
+                  <div class="timeline-card-meta">补充协议 · 2025-09-20 签订 · 调整驾意险佣金比例</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-item expired">
+            <div class="timeline-card">
+              <div class="timeline-card-header">
+                <div>
+                  <span class="timeline-card-code">PC-KJXY-2024-001</span>
+                  <span class="tag tag-default" style="margin-left: 8px;">⚫ 已过期</span>
+                </div>
+                <div>
+                  <button class="btn">查看</button>
+                </div>
+              </div>
+              <div class="timeline-card-meta">
+                【框架协议】· 有效期：2024-01-01 至 2024-12-31 · 关联 2 份结算协议
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="margin-top: var(--space-md); text-align: center;">
+          <button class="btn">+ 发起新协议</button>
+        </div>
+      </div>
+
+      <!-- 第三层：协议详情页示例 -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">📄 协议详情 · PC-JSXY-2026-001</div>
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">【结算协议】· 归档日期：2026-01-05</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn">返回协议列表</button>
+            <button class="btn">发起补充协议</button>
+            <button class="btn btn-accent">作废此协议</button>
+          </div>
+        </div>
+
+        <div class="banner" style="background: linear-gradient(90deg, var(--color-warning), var(--color-accent));">
+          <span class="banner-icon">⏰</span>
+          <span>该协议即将到期（距到期 45 天），请及时处理续签。</span>
+        </div>
+
+        <div style="margin-bottom: var(--space-md);">
+          <div class="card-title">📋 基本信息</div>
+          <div class="kv-list" style="margin-top: var(--space-sm);">
+            <div class="kv-item"><span class="kv-label">协议编号</span><span class="kv-value">PC-JSXY-2026-001</span></div>
+            <div class="kv-item"><span class="kv-label">协议类型</span><span class="kv-value">结算协议</span></div>
+            <div class="kv-item"><span class="kv-label">协议状态</span><span class="kv-value"><span class="tag tag-warning">即将到期</span></span></div>
+            <div class="kv-item"><span class="kv-label">签订日期</span><span class="kv-value">2025-12-20</span></div>
+            <div class="kv-item"><span class="kv-label">生效日期</span><span class="kv-value">2026-01-01</span></div>
+            <div class="kv-item"><span class="kv-label">到期日期</span><span class="kv-value">2026-12-31</span></div>
+            <div class="kv-item"><span class="kv-label">归档日期</span><span class="kv-value">2026-01-05</span></div>
+            <div class="kv-item"><span class="kv-label">录入人</span><span class="kv-value">李运营（运营主管）</span></div>
+            <div class="kv-item"><span class="kv-label">复核人</span><span class="kv-value">王主管</span></div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: var(--space-md);">
+          <div class="card-title">📋 协议参与方</div>
+          <div style="margin-top: var(--space-sm); background: var(--color-bg); padding: 12px; border-radius: var(--radius-md);">
+            <div style="font-size: 13px;">① PICC 财产保险股份有限公司深圳分公司</div>
+            <div style="font-size: 13px; margin-top: 4px;">② 新能源物流城保险经纪（深圳）有限公司</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: var(--space-md);">
+          <div class="card-title">📋 商务条款</div>
+          <div class="kv-list" style="margin-top: var(--space-sm);">
+            <div class="kv-item"><span class="kv-label">结算周期</span><span class="kv-value">月结（次月 15 日前）</span></div>
+            <div class="kv-item"><span class="kv-label">业务板块</span><span class="kv-value">车险 + 非车险</span></div>
+            <div class="kv-item"><span class="kv-label">佣金比例</span><span class="kv-value">车险 25% / 非车险 30%</span></div>
+            <div class="kv-item"><span class="kv-label">开票要求</span><span class="kv-value">增值税专用发票</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card-title">📎 协议扫描件</div>
+          <div style="margin-top: var(--space-sm); display: flex; gap: var(--space-sm);">
+            <div style="background: var(--color-bg); padding: 12px; border-radius: var(--radius-md); font-size: 13px; display: flex; align-items: center; gap: 8px;">
+              📄 合作协议扫描件_2026版.pdf
+              <span class="text-muted">2026-01-01</span>
+              <button class="btn">预览</button>
+              <button class="btn">下载</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+    requireAuth();
+
+    const session = getSession();
+    const perms = getPermissions(session.role);
+
+let agreements = [];
+
+    function loadData() {
+      agreements = getList(STORAGE_KEYS.agreements);
+    }
+
+    function statusTag(s) {
+      const map = {
+        '生效中': '<span class="tag tag-success">生效中</span>',
+        '即将到期': '<span class="tag tag-warning">即将到期</span>',
+        '已过期': '<span class="tag tag-error">已过期</span>',
+        '待复核': '<span class="tag tag-warning">待复核</span>',
+        '已作废': '<span class="tag tag-default">已作废</span>'
+      };
+      return map[s] || ('<span class="tag tag-default">' + s + '</span>');
+    }
+
+    function channelTag(c) {
+      if (c === '经纪业务') return '<span class="tag tag-info">经纪业务</span>';
+      if (c === '非经纪') return '<span class="tag tag-default">非经纪</span>';
+      return c;
+    }
+
+    function daysTo(dateStr) {
+      if (!dateStr) return null;
+      return Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24));
+    }
+
+    function renderKPI() {
+      const total = agreements.length;
+      const 即将到期 = agreements.filter(a => daysTo(a.到期日期) <= 30 && daysTo(a.到期日期) > 0).length;
+      const 生效中 = agreements.filter(a => a.协议状态 === '生效中').length;
+      const 待复核 = agreements.filter(a => a.协议状态 === '待复核').length;
+
+      document.getElementById('kpiGrid').innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-label">协议总数</div>
+          <div class="kpi-value">${total}</div>
+          <div class="kpi-change">实时数据</div>
+        </div>
+        <div class="kpi-card accent">
+          <div class="kpi-label">30 天内到期</div>
+          <div class="kpi-value">${即将到期}</div>
+          <div class="kpi-change down">需处理续签</div>
+        </div>
+        <div class="kpi-card secondary">
+          <div class="kpi-label">生效中</div>
+          <div class="kpi-value">${生效中}</div>
+          <div class="kpi-change up">稳态运营</div>
+        </div>
+        <div class="kpi-card warning">
+          <div class="kpi-label">待复核</div>
+          <div class="kpi-value">${待复核}</div>
+          <div class="kpi-change">运营专员录入</div>
+        </div>
+      `;
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('agreementTableBody');
+      if (agreements.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="empty"><div class="empty-icon">📭</div>暂无协议数据</td></tr>';
+        document.getElementById('agreementInfo').textContent = '共 0 条记录';
+        return;
+      }
+      tbody.innerHTML = agreements.map((a, i) => {
+        const d = daysTo(a.到期日期);
+        let dayText = '—', dayClass = '';
+        if (d === null) { dayText = '—'; }
+        else if (d < 0) { dayText = '已过期 ' + Math.abs(d) + ' 天'; dayClass = 'text-error'; }
+        else if (d <= 30) { dayText = '<strong>' + d + ' 天</strong>'; dayClass = 'text-warning'; }
+        else { dayText = d + ' 天'; dayClass = 'text-success'; }
+
+        return `
+          <tr>
+            <td class="text-mono">${i + 1}</td>
+            <td><strong>${a.保司 || '—'}</strong></td>
+            <td><span class="tag tag-default">${a.保司系 || '—'}</span></td>
+            <td>${channelTag(a.渠道)}</td>
+            <td class="text-mono">${a.协议编号}</td>
+            <td>${statusTag(a.协议状态)}</td>
+            <td>${formatDate(a.到期日期)}</td>
+            <td class="text-mono ${dayClass}">${dayText}</td>
+            <td>
+              <button class="btn" onclick="deleteAgreement('${a.id}')">删除</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      document.getElementById('agreementInfo').textContent = '共 ' + agreements.length + ' 条记录';
+    }
+
+    function deleteAgreement(id) {
+      if (!confirm('确定删除此协议？')) return;
+      deleteItem(STORAGE_KEYS.agreements, id);
+      loadData();
+      renderKPI();
+      renderTable();
+    }
+
+    function exportCSV() {
+      const headers = ['协议编号', '协议名称', '协议类型', '保司', '保司系', '渠道', '业务板块', '签订日期', '生效日期', '到期日期', '协议状态'];
+      const rows = agreements.map(a => [a.协议编号, a.协议名称, a.协议类型, a.保司, a.保司系, a.渠道, a.业务板块, a.签订日期, a.生效日期, a.到期日期, a.协议状态]);
+      const csv = '﻿' + [headers, ...rows].map(r => r.map(c => `"${c || ''}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = '协议清单_' + new Date().toISOString().slice(0, 10) + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    loadData();
+    renderKPI();
+    renderTable();
+  </script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>操作日志 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <style>
+    .action-tag { padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+    .action-create { background: #E0F2F1; color: var(--color-success); }
+    .action-update { background: #E3F2FD; color: var(--color-info); }
+    .action-delete { background: #FFEBEE; color: var(--color-error); }
+    .action-login { background: #FFF3E0; color: var(--color-warning); }
+    .action-import { background: #F3E5F5; color: #7B1FA2; }
+    .role-tag { padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+    .role-admin { background: #FFEBEE; color: #C62828; }
+    .role-operator { background: #E0F2F1; color: var(--color-success); }
+    .role-finance { background: #E3F2FD; color: var(--color-info); }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔案件列表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表中心</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">系统</div>
+        <a href="基础数据.html" class="nav-item"><span class="nav-icon">⚙️</span><span>基础数据</span></a>
+        <a href="用户管理.html" class="nav-item"><span class="nav-icon">👥</span><span>用户管理</span></a>
+        <a href="操作日志.html" class="nav-item active"><span class="nav-icon">📋</span><span>操作日志</span></a>
+      </div>
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <span>操作日志</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">📋 操作日志</div>
+          <div class="page-subtitle">全量操作流水 · 保留最近 500 条 · 关键操作全程留痕</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="exportLog()">📥 导出 CSV</button>
+          <button class="btn" onclick="clearLog()" style="color: var(--color-error);">🗑️ 清空</button>
+        </div>
+      </div>
+
+      <!-- 统计 -->
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <!-- 筛选 -->
+      <div class="card">
+        <div class="toolbar">
+          <input type="text" id="searchInput" class="search-input" placeholder="搜索用户 / 目标对象">
+          <select id="filterAction" class="filter-select">
+            <option value="">全部操作</option>
+            <option>create</option>
+            <option>update</option>
+            <option>delete</option>
+            <option>login</option>
+            <option>import</option>
+          </select>
+          <select id="filterModule" class="filter-select">
+            <option value="">全部模块</option>
+            <option>carPolicies</option>
+            <option>otherPolicies</option>
+            <option>extendedPolicies</option>
+            <option>agreements</option>
+            <option>commissions</option>
+            <option>claims</option>
+            <option>consultations</option>
+            <option>users</option>
+          </select>
+          <select id="filterUser" class="filter-select">
+            <option value="">全部用户</option>
+          </select>
+          <button class="btn" onclick="resetFilters()">🔄 重置</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>时间</th>
+                <th>用户</th>
+                <th>角色</th>
+                <th>操作</th>
+                <th>模块</th>
+                <th>目标</th>
+                <th>详情</th>
+              </tr>
+            </thead>
+            <tbody id="logBody"></tbody>
+          </table>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-md); font-size: 13px; color: var(--color-text-secondary);">
+          <div id="paginationInfo">共 0 条</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+
+    const session = getSession();
+    if (session && !can('viewLogs', session.role)) {
+      document.querySelector('.main').innerHTML = '<div class="card" style="text-align: center; padding: 60px;"><div class="empty-icon">🔒</div><h3>无访问权限</h3><p style="color: var(--color-text-secondary); margin-top: 8px;">操作日志仅管理员/财务可访问</p></div>';
+    } else {
+      init();
+    }
+
+    let allLogs = [];
+
+    function init() {
+      loadLogs();
+      renderKPI();
+      renderFilters();
+      renderTable();
+    }
+
+    function loadLogs() {
+      const raw = localStorage.getItem('nle.operationLog') || '[]';
+      allLogs = JSON.parse(raw);
+    }
+
+    function renderKPI() {
+      const total = allLogs.length;
+      const today = new Date().toISOString().slice(0, 10);
+      const todayCount = allLogs.filter(l => l.time && l.time.startsWith(today)).length;
+      const create = allLogs.filter(l => l.action === 'create').length;
+      const delete_ = allLogs.filter(l => l.action === 'delete').length;
+      const userSet = new Set(allLogs.map(l => l.user));
+      document.getElementById('kpiGrid').innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-label">总操作数</div>
+          <div class="kpi-value">${total}</div>
+          <div class="kpi-change">最近 500 条</div>
+        </div>
+        <div class="kpi-card accent">
+          <div class="kpi-label">今日操作</div>
+          <div class="kpi-value">${todayCount}</div>
+        </div>
+        <div class="kpi-card secondary">
+          <div class="kpi-label">创建</div>
+          <div class="kpi-value">${create}</div>
+        </div>
+        <div class="kpi-card warning">
+          <div class="kpi-label">活跃用户</div>
+          <div class="kpi-value">${userSet.size}</div>
+          <div class="kpi-change down">删除 ${delete_} 次</div>
+        </div>
+      `;
+    }
+
+    function renderFilters() {
+      const users = [...new Set(allLogs.map(l => l.user))];
+      const sel = document.getElementById('filterUser');
+      sel.innerHTML = '<option value="">全部用户</option>' + users.map(u => `<option>${u}</option>`).join('');
+    }
+
+    function renderTable() {
+      const q = (document.getElementById('searchInput').value || '').toLowerCase();
+      const action = document.getElementById('filterAction').value;
+      const module = document.getElementById('filterModule').value;
+      const user = document.getElementById('filterUser').value;
+
+      const filtered = allLogs.filter(l => {
+        if (q && ![l.user, l.target, l.detail].join(' ').toLowerCase().includes(q)) return false;
+        if (action && l.action !== action) return false;
+        if (module && l.module !== module) return false;
+        if (user && l.user !== user) return false;
+        return true;
+      });
+
+      const tbody = document.getElementById('logBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty"><div class="empty-icon">📋</div>暂无操作日志</td></tr>';
+      } else {
+        tbody.innerHTML = filtered.slice(0, 200).map(l => `
+          <tr>
+            <td class="text-mono" style="font-size: 12px;">${l.time ? l.time.replace('T', ' ').slice(0, 19) : '—'}</td>
+            <td><strong>${l.user}</strong></td>
+            <td>${roleTag(l.role)}</td>
+            <td>${actionTag(l.action)}</td>
+            <td class="text-mono" style="font-size: 12px;">${l.module || '—'}</td>
+            <td class="text-mono" style="font-size: 12px;">${l.target || '—'}</td>
+            <td style="font-size: 12px; color: var(--color-text-secondary); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${l.detail || ''}">${l.detail || '—'}</td>
+          </tr>
+        `).join('');
+      }
+
+      document.getElementById('paginationInfo').textContent = `共 ${allLogs.length} 条 · 当前 ${filtered.length} 条 · 显示前 200 条`;
+    }
+
+    function roleTag(role) {
+      const map = {
+        admin: '<span class="role-tag role-admin">管理员</span>',
+        operator: '<span class="role-tag role-operator">运营专员</span>',
+        finance: '<span class="role-tag role-finance">财务专员</span>'
+      };
+      return map[role] || role;
+    }
+
+    function actionTag(action) {
+      const map = {
+        create: '<span class="action-tag action-create">+ 创建</span>',
+        update: '<span class="action-tag action-update">✎ 修改</span>',
+        delete: '<span class="action-tag action-delete">✕ 删除</span>',
+        login: '<span class="action-tag action-login">↻ 登录</span>',
+        import: '<span class="action-tag action-import">⤓ 导入</span>'
+      };
+      return map[action] || ('<span class="action-tag">' + action + '</span>');
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('filterAction').value = '';
+      document.getElementById('filterModule').value = '';
+      document.getElementById('filterUser').value = '';
+      renderTable();
+    }
+
+    function exportLog() {
+      const headers = ['时间', '用户', '角色', '操作', '模块', '目标', '详情'];
+      const rows = allLogs.map(l => [
+        l.time, l.user, l.role, l.action, l.module, l.target, l.detail
+      ]);
+      const csv = '﻿' + [headers, ...rows].map(r => r.map(c => `"${c || ''}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = '操作日志_' + new Date().toISOString().slice(0, 10) + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function clearLog() {
+      if (!confirm('确定清空所有操作日志？此操作不可撤销。')) return;
+      localStorage.setItem('nle.operationLog', '[]');
+      allLogs = [];
+      renderKPI();
+      renderTable();
+    }
+
+    document.getElementById('searchInput').addEventListener('input', renderTable);
+    document.getElementById('filterAction').addEventListener('change', renderTable);
+    document.getElementById('filterModule').addEventListener('change', renderTable);
+    document.getElementById('filterUser').addEventListener('change', renderTable);
+  </script>
+</body>
+</html>

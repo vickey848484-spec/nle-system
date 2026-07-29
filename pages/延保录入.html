@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>录入延保 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <style>
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md); }
+    .form-item { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 12px; color: var(--color-text-secondary); font-weight: 500; }
+    .form-label .req { color: var(--color-error); margin-left: 2px; }
+    .form-input, .form-select, .form-textarea {
+      padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      font-size: 13px; font-family: inherit; outline: none; background: var(--color-bg-white);
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--color-primary); }
+    .form-input.mono { font-family: "SF Mono", Menlo, monospace; }
+    .form-section-title {
+      font-size: 14px; font-weight: 600; margin-bottom: var(--space-md);
+      padding-bottom: 6px; border-bottom: 1px solid var(--color-border-light);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .form-section-title::before {
+      content: ''; width: 3px; height: 14px; background: var(--color-primary); border-radius: 2px;
+    }
+    .form-tip { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+    .form-tip.text-primary { color: var(--color-primary); }
+    .form-actions {
+      display: flex; gap: var(--space-sm); justify-content: flex-end;
+      padding-top: var(--space-md); border-top: 1px solid var(--color-border-light);
+    }
+    .form-saved {
+      position: fixed; top: 20px; right: 20px; background: var(--color-success);
+      color: white; padding: 12px 20px; border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg); z-index: 1000;
+    }
+    .calculated {
+      background: var(--color-primary-bg); padding: 8px 12px;
+      border-radius: var(--radius-md); font-family: "SF Mono", monospace;
+      font-weight: 600; color: var(--color-primary-dark);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+            <div class="nav-group">
+        <div class="nav-group-title">理赔共建</div>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔案件列表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表中心</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <!-- 用户信息条 -->
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <a href="3-延保.html">延保</a>
+        <span class="separator">/</span>
+        <span>录入保单</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">🔧 录入延保保单</div>
+          <div class="page-subtitle">延长保修责任保险 · 车辆原厂保修期外保障</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="window.location='3-延保.html'">取消</button>
+          <button class="btn btn-primary" onclick="submitForm()">💾 保存保单</button>
+        </div>
+      </div>
+
+      <form id="policyForm" onsubmit="event.preventDefault(); submitForm();">
+
+        <!-- 1. 业务信息 -->
+        <div class="card">
+          <div class="card-title form-section-title">📋 一、业务信息</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">项目<span class="req">*</span></label>
+              <select name="项目" class="form-select" required>
+                <option value="新延保">新延保</option>
+                <option value="旧延保">旧延保</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">大区</label>
+              <select name="大区" class="form-select">
+                <option value="华南大区">华南大区</option>
+                <option value="华东大区">华东大区</option>
+                <option value="华北大区">华北大区</option>
+                <option value="西南大区">西南大区</option>
+                <option value="西北大区">西北大区</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">运营城市</label>
+              <input type="text" name="运营城市" class="form-input" placeholder="例: 深圳市">
+            </div>
+            <div class="form-item">
+              <label class="form-label">归属运营公司</label>
+              <input type="text" name="归属运营公司" class="form-input" placeholder="例: 广州地上铁">
+            </div>
+            <div class="form-item">
+              <label class="form-label">承保公司分级</label>
+              <input type="text" name="承保公司分级" class="form-input" placeholder="例: 深圳人保龙华支">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 保单基本信息 -->
+        <div class="card">
+          <div class="card-title form-section-title">📋 二、保单基本信息</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">保单号<span class="req">*</span></label>
+              <input type="text" name="保单号" class="form-input mono" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">批单号</label>
+              <input type="text" name="批单号" class="form-input mono">
+            </div>
+            <div class="form-item">
+              <label class="form-label">总险种</label>
+              <input type="text" name="总险种" class="form-input" value="责任保险" readonly>
+            </div>
+            <div class="form-item">
+              <label class="form-label">具体险种</label>
+              <input type="text" name="具体险种" class="form-input" value="延长保修责任保险" readonly>
+            </div>
+            <div class="form-item">
+              <label class="form-label">出单日期<span class="req">*</span></label>
+              <input type="date" name="出单日期" class="form-input" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">保险起期<span class="req">*</span></label>
+              <input type="date" name="保险起期" class="form-input" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">保险止期<span class="req">*</span></label>
+              <input type="date" name="保险止期" class="form-input" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 车辆信息 -->
+        <div class="card">
+          <div class="card-title form-section-title">🚗 三、车辆信息</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">车架号（VIN）<span class="req">*</span></label>
+              <input type="text" name="车架号" class="form-input mono" required placeholder="17 位 VIN">
+            </div>
+            <div class="form-item">
+              <label class="form-label">车牌号</label>
+              <input type="text" name="车牌号" class="form-input mono" placeholder="例: 粤BAY0592">
+            </div>
+            <div class="form-item">
+              <label class="form-label">原厂保修开始日期</label>
+              <input type="date" name="原厂保修开始日期" class="form-input">
+            </div>
+            <div class="form-item">
+              <label class="form-label">原厂保修截止时间</label>
+              <input type="date" name="原厂保修截止时间" class="form-input">
+            </div>
+            <div class="form-item">
+              <label class="form-label">车辆年份</label>
+              <input type="text" name="车辆年份" class="form-input mono" placeholder="例: 2024">
+            </div>
+            <div class="form-item">
+              <label class="form-label">行驶里程（公里）</label>
+              <input type="number" name="行驶里程" class="form-input mono" placeholder="例: 25000">
+            </div>
+            <div class="form-item">
+              <label class="form-label">车辆用途</label>
+              <select name="车辆用途" class="form-select">
+                <option value="营运">营运</option>
+                <option value="非营运">非营运</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">新车市场销售价</label>
+              <input type="number" name="新车市场销售价" class="form-input mono" placeholder="元">
+            </div>
+            <div class="form-item">
+              <label class="form-label">车辆品牌<span class="req">*</span></label>
+              <input type="text" name="车辆品牌" class="form-input" placeholder="例: 瑞驰牌-EC35II" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">车辆族群</label>
+              <input type="text" name="车辆族群" class="form-input" placeholder="例: 面系">
+            </div>
+            <div class="form-item">
+              <label class="form-label">车辆车型</label>
+              <input type="text" name="车辆车型" class="form-input" placeholder="例: 小面、轻卡">
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. 投保人 -->
+        <div class="card">
+          <div class="card-title form-section-title">👤 四、投保人</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">投保人<span class="req">*</span></label>
+              <input type="text" name="投保人" class="form-input" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">被保险人<span class="req">*</span></label>
+              <input type="text" name="被保险人" class="form-input" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. 保额保费佣金 -->
+        <div class="card">
+          <div class="card-title form-section-title">💰 五、保额/保费/佣金</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">保额<span class="req">*</span></label>
+              <input type="number" name="保额" class="form-input mono" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">保费（含税）<span class="req">*</span></label>
+              <input type="number" name="保费含税" id="保费含税" class="form-input mono" step="0.01" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">保费（不含税）</label>
+              <div class="calculated" id="保费不含税">¥ 0.00</div>
+            </div>
+            <div class="form-item">
+              <label class="form-label">满期保费（不含税）</label>
+              <div class="calculated" id="满期保费">¥ 0.00</div>
+              <div class="form-tip">实时 = 不含税 × (今天-起)/(止-起)</div>
+            </div>
+            <div class="form-item">
+              <label class="form-label">是否联保</label>
+              <select name="是否联保" class="form-select">
+                <option value="否">否</option>
+                <option value="是">是</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">佣金比例（系统带出）</label>
+              <input type="number" name="佣金比例" id="佣金比例" class="form-input mono" step="0.01" min="0" max="1" value="0.25">
+            </div>
+            <div class="form-item">
+              <label class="form-label">含税佣金金额</label>
+              <div class="calculated" id="含税佣金">¥ 0.00</div>
+            </div>
+            <div class="form-item">
+              <label class="form-label">不含税佣金金额</label>
+              <div class="calculated" id="不含税佣金">¥ 0.00</div>
+            </div>
+            <div class="form-item">
+              <label class="form-label">结算佣金比例</label>
+              <input type="number" name="结算佣金比例" class="form-input mono" step="0.01" min="0" max="1" value="0.25">
+            </div>
+            <div class="form-item">
+              <label class="form-label">含税结算佣金</label>
+              <input type="number" name="含税结算佣金" class="form-input mono" step="0.01" value="0">
+            </div>
+            <div class="form-item">
+              <label class="form-label">不含税结算佣金</label>
+              <input type="number" name="不含税结算佣金" class="form-input mono" step="0.01" value="0">
+            </div>
+            <div class="form-item">
+              <label class="form-label">结算日期</label>
+              <input type="date" name="结算日期" class="form-input">
+            </div>
+            <div class="form-item">
+              <label class="form-label">未结含税佣金</label>
+              <input type="number" name="未结含税" class="form-input mono" step="0.01" value="0">
+            </div>
+            <div class="form-item">
+              <label class="form-label">未结不含税佣金</label>
+              <input type="number" name="未结不含税" class="form-input mono" step="0.01" value="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. 备注 -->
+        <div class="card">
+          <div class="card-title form-section-title">📝 六、备注</div>
+          <div class="form-grid">
+            <div class="form-item" style="grid-column: 1 / -1;">
+              <label class="form-label">备注 / 说明</label>
+              <textarea name="备注" class="form-textarea" style="min-height: 60px;"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="form-actions">
+            <button type="button" class="btn" onclick="window.location='3-延保.html'">取消</button>
+            <button type="submit" class="btn btn-primary">💾 保存保单</button>
+          </div>
+        </div>
+
+      </form>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+    requireAuth();
+
+    function recalc() {
+      const 含税 = parseFloat(document.getElementById('保费含税').value) || 0;
+      const 不含税 = 含税 / 1.06;
+      document.getElementById('保费不含税').textContent = '¥ ' + 不含税.toFixed(2);
+
+      const ratio = parseFloat(document.getElementById('佣金比例').value) || 0;
+      const 含税佣金 = 不含税 * ratio;
+      const 不含税佣金 = 含税佣金 / 1.06;
+      document.getElementById('含税佣金').textContent = '¥ ' + 含税佣金.toFixed(2);
+      document.getElementById('不含税佣金').textContent = '¥ ' + 不含税佣金.toFixed(2);
+
+      const 起 = document.querySelector('input[name="保险起期"]').value;
+      const 止 = document.querySelector('input[name="保险止期"]').value;
+      if (起 && 止) {
+        const total = (new Date(止) - new Date(起)) / (1000 * 60 * 60 * 24);
+        if (total > 0) {
+          const passed = Math.max(0, Math.min(total, (Date.now() - new Date(起)) / (1000 * 60 * 60 * 24)));
+          document.getElementById('满期保费').textContent = '¥ ' + (不含税 * passed / total).toFixed(2);
+        }
+      }
+    }
+
+    document.getElementById('保费含税').addEventListener('input', recalc);
+    document.getElementById('佣金比例').addEventListener('input', recalc);
+    document.querySelector('input[name="保险起期"]').addEventListener('change', recalc);
+    document.querySelector('input[name="保险止期"]').addEventListener('change', recalc);
+
+    function showSaved() {
+      const d = document.createElement('div');
+      d.className = 'form-saved';
+      d.innerHTML = '✅ 延保已保存！';
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 2000);
+    }
+
+    function submitForm() {
+      const form = document.getElementById('policyForm');
+      const data = {};
+      new FormData(form).forEach((v, k) => { data[k] = v; });
+
+      if (!data.保单号 || !data.车架号 || !data.投保人) {
+        alert('请填写必填字段');
+        return;
+      }
+
+      data.保费含税 = parseFloat(data.保费含税) || 0;
+      data.保费不含税 = taxExcluded(data.保费含税);
+      data.佣金比例 = parseFloat(data.佣金比例) || 0;
+      data.满期保费不含税 = data.保费不含税;
+
+      const existing = getList(STORAGE_KEYS.extendedPolicies);
+      if (existing.some(p => p.保单号 === data.保单号 && p.批单号 === (data.批单号 || ''))) {
+        alert('保单号 ' + data.保单号 + ' 已存在！');
+        return;
+      }
+
+      addItem(STORAGE_KEYS.extendedPolicies, data);
+      showSaved();
+      setTimeout(() => window.location = '3-延保.html', 800);
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    const nextYear = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    document.querySelector('input[name="出单日期"]').value = today;
+    document.querySelector('input[name="保险起期"]').value = today;
+    document.querySelector('input[name="保险止期"]').value = nextYear;
+    recalc();
+  </script>
+</body>
+</html>

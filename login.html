@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="css/style.css?v=20260729">
+  <style>
+    body {
+      background: linear-gradient(135deg, #00BFA5 0%, #1E88E5 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-md);
+    }
+    .login-wrap {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 420px;
+      overflow: hidden;
+    }
+    .login-header {
+      padding: 40px 40px 24px;
+      text-align: center;
+    }
+    .login-logo {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto var(--space-md);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 191, 165, 0.3);
+    }
+    .login-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: 4px;
+    }
+    .login-subtitle {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+    }
+    .login-body {
+      padding: 0 40px 40px;
+    }
+    .form-item { margin-bottom: var(--space-md); }
+    .form-label {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      margin-bottom: 6px;
+      display: block;
+      font-weight: 500;
+    }
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    .form-input:focus { border-color: var(--color-primary); }
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.2s;
+      margin-top: var(--space-sm);
+    }
+    .btn-login:hover:not(:disabled) { opacity: 0.9; }
+    .btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
+    .login-tip {
+      background: #E3F2FD;
+      color: #1565C0;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      margin-bottom: var(--space-md);
+    }
+    .login-error {
+      background: #FFEBEE;
+      color: var(--color-error);
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      margin-bottom: var(--space-md);
+      display: none;
+      word-break: break-all;
+    }
+    .login-status {
+      background: #FFF3E0;
+      color: #E65100;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      margin-bottom: var(--space-md);
+      display: none;
+    }
+    .login-footer {
+      padding: 16px 40px;
+      border-top: 1px solid var(--color-border-light);
+      background: var(--color-bg);
+      font-size: 12px;
+      color: var(--color-text-muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-header">
+      <div class="login-logo">⚡</div>
+      <div class="login-title">新能源物流城</div>
+      <div class="login-subtitle">运营业务管理系统</div>
+    </div>
+
+    <div class="login-body">
+      <div class="login-tip">
+        💡 默认账号 <strong>admin</strong> / 密码 <strong>admin123</strong>
+      </div>
+
+      <div class="login-error" id="errorBox"></div>
+      <div class="login-status" id="statusBox"></div>
+
+      <form id="loginForm">
+        <div class="form-item">
+          <label class="form-label">账号</label>
+          <input type="text" id="username" class="form-input" placeholder="请输入账号" autocomplete="username">
+        </div>
+
+        <div class="form-item">
+          <label class="form-label">密码</label>
+          <input type="password" id="password" class="form-input" placeholder="请输入密码" autocomplete="current-password">
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-md);">
+          <input type="checkbox" id="remember" checked>
+          <label for="remember" style="font-size: 12px; color: var(--color-text-secondary); cursor: pointer;">记住我</label>
+        </div>
+
+        <button type="submit" class="btn-login" id="loginBtn">登 录</button>
+      </form>
+    </div>
+
+    <div class="login-footer">
+      v1.0 · 新能源物流城运营业务管理系统
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // 完全自包含的登录逻辑（不依赖任何外部脚本）
+    // ============================================================
+
+    // 演示账号（即使后端不通，本地也能登录）
+    const USERS = [
+      { username: 'admin', password: 'admin123', name: 'Vickey', role: 'admin' },
+      { username: 'operator', password: 'op123', name: '运营专员', role: 'operator' },
+      { username: 'finance', password: 'fin123', name: '财务专员', role: 'finance' },
+      { username: 'hejingjun', password: 'hj123', name: '何静君', role: 'operator' },
+      { username: 'lin涛', password: 'lt123', name: '林涛', role: 'operator' }
+    ];
+
+    const SESSION_KEY = 'nle.session';
+    const LOG_KEY = 'nle.loginLog';
+
+    // 工具：状态展示
+    function showError(msg) {
+      console.error('[登录] 错误:', msg);
+      const box = document.getElementById('errorBox');
+      box.textContent = '❌ ' + msg;
+      box.style.display = 'block';
+      setTimeout(() => box.style.display = 'none', 8000);
+    }
+
+    function showStatus(msg) {
+      console.log('[登录] 状态:', msg);
+      const box = document.getElementById('statusBox');
+      box.textContent = '⏳ ' + msg;
+      box.style.display = 'block';
+    }
+
+    function hideStatus() {
+      document.getElementById('statusBox').style.display = 'none';
+    }
+
+    function setBusy(busy) {
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = busy;
+      btn.textContent = busy ? '登录中...' : '登 录';
+    }
+
+    function setSession(s) {
+      try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+        return true;
+      } catch (e) {
+        console.error('[登录] setSession 失败:', e);
+        return false;
+      }
+    }
+
+    function getSession() {
+      try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // 计算 API 地址（兼容 file:// / localhost / tunnel / 部署）
+    function getApiBase() {
+      const proto = window.location.protocol;
+      if (proto === 'file:') return 'http://localhost:3000/api';
+      // http/https 都用相对路径
+      return window.location.origin + '/api';
+    }
+
+    // 带超时的 fetch
+    function fetchWithTimeout(url, options, timeoutMs) {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), timeoutMs || 5000);
+      return fetch(url, { ...options, signal: controller.signal })
+        .finally(() => clearTimeout(tid));
+    }
+
+    // 尝试 API 登录（带超时和降级）
+    async function tryApiLogin(username, password) {
+      const apiBase = getApiBase();
+      console.log('[登录] API base:', apiBase);
+
+      try {
+        showStatus('正在连接服务器...');
+        const res = await fetchWithTimeout(apiBase + '/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        }, 4000);
+
+        if (!res.ok) {
+          console.warn('[登录] API 返回错误:', res.status);
+          return null;
+        }
+        const data = await res.json();
+        console.log('[登录] API 返回数据:', data);
+        return data && data.token ? data : null;
+      } catch (e) {
+        console.warn('[登录] API 请求失败:', e.message || e);
+        return null;
+      }
+    }
+
+    // 本地登录（永不通失败，只要账号对就能进）
+    function tryLocalLogin(username, password) {
+      console.log('[登录] 本地查找:', username);
+      const user = USERS.find(u => u.username === username && u.password === password);
+      if (!user) return null;
+      return {
+        username: user.username,
+        name: user.name,
+        role: user.role,
+        loginAt: new Date().toISOString()
+      };
+    }
+
+    // 主登录流程
+    async function doLogin() {
+      console.log('========== 登录开始 ==========');
+      const username = (document.getElementById('username').value || '').trim();
+      const password = document.getElementById('password').value || '';
+
+      console.log('[登录] 输入:', { username, passwordLen: password.length });
+
+      if (!username || !password) {
+        showError('请输入账号和密码');
+        return;
+      }
+
+      setBusy(true);
+
+      // 第一层：API 登录（带超时）
+      const apiResult = await tryApiLogin(username, password);
+
+      if (apiResult && apiResult.token) {
+        showStatus('登录成功，跳转中...');
+        setSession(apiResult);
+        hideStatus();
+        setTimeout(() => window.location.href = 'index.html', 300);
+        return;
+      }
+
+      // 第二层：本地 fallback
+      showStatus('API 不可用，使用本地登录...');
+      const localResult = tryLocalLogin(username, password);
+
+      if (localResult) {
+        console.log('[登录] 本地登录成功:', localResult);
+        setSession(localResult);
+        hideStatus();
+        setTimeout(() => window.location.href = 'index.html', 300);
+        return;
+      }
+
+      // 都失败
+      hideStatus();
+      setBusy(false);
+      showError('账号或密码错误（admin / admin123）');
+    }
+
+    // 表单提交
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      doLogin();
+    });
+
+    // 按钮点击（兜底）
+    document.getElementById('loginBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      doLogin();
+    });
+
+    // 已登录直接跳转
+    try {
+      if (getSession()) {
+        console.log('[登录] 已登录，跳转主页');
+        window.location.href = 'index.html';
+      } else {
+        console.log('[登录] 未登录，显示登录页');
+      }
+    } catch (e) {
+      console.error('[登录] 检查 session 出错:', e);
+    }
+
+    // 暴露给 console 调试用
+    window.__debug = {
+      USERS, getSession, setSession, tryLocalLogin, getApiBase,
+      clearSession: () => { localStorage.removeItem(SESSION_KEY); console.log('session cleared'); }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>延保 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item active"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+            <div class="nav-group">
+        <div class="nav-group-title">理赔共建</div>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔案件列表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表中心</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">系统</div>
+        <a href="#" class="nav-item"><span class="nav-icon">⚙️</span><span>基础数据</span></a>
+        <a href="#" class="nav-item"><span class="nav-icon">📋</span><span>操作日志</span></a>
+      </div>
+      <!-- 用户信息条 -->
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <span>延保</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">延保</div>
+          <div class="page-subtitle">延长保修责任保险 · 车辆原厂保修期外保障</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn">📥 导入 Excel</button>
+          <a href="延保录入.html" class="btn btn-primary">+ 录入保单</a>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">承保保单数</div>
+          <div class="kpi-value">423</div>
+          <div class="kpi-change up">本月新增 28 单</div>
+        </div>
+        <div class="kpi-card accent">
+          <div class="kpi-label">满期保费</div>
+          <div class="kpi-value">¥ 587K</div>
+          <div class="kpi-change">不含税</div>
+        </div>
+        <div class="kpi-card secondary">
+          <div class="kpi-label">赔付率</div>
+          <div class="kpi-value">38.2<span class="unit">%</span></div>
+          <div class="kpi-change up">低于行业均值</div>
+        </div>
+        <div class="kpi-card warning">
+          <div class="kpi-label">新/旧延保比</div>
+          <div class="kpi-value">2.1:1</div>
+          <div class="kpi-change">新业务扩展中</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🔧 延保承保明细</div>
+          <div style="display: flex; gap: 8px;">
+            <select class="filter-select"><option>全部类型</option><option>新延保</option><option>旧延保</option></select>
+            <select class="filter-select"><option>全部大区</option><option>华南大区</option><option>华东大区</option><option>华北大区</option></select>
+            <select class="filter-select"><option>全部运营商</option><option>地上铁</option><option>易维</option></select>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <input type="text" class="search-input" placeholder="搜索保单号 / 车架号 / 车辆品牌">
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>项目</th>
+                <th>保单号</th>
+                <th>车架号</th>
+                <th>车牌号</th>
+                <th>车辆品牌</th>
+                <th>车系</th>
+                <th>车型</th>
+                <th>大区</th>
+                <th>运营城市</th>
+                <th>运营商</th>
+                <th>承保公司</th>
+                <th>起保日期</th>
+                <th class="text-right">保费（含税）</th>
+                <th class="text-right">满期保费</th>
+                <th>状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="tag tag-warning">旧延保</span></td>
+                <td class="text-mono">PUAB20244403Y000115730</td>
+                <td class="text-mono">LR83STGT2NB011428</td>
+                <td><strong>粤AAY0592</strong></td>
+                <td>瑞驰牌-EC35II</td>
+                <td>面系</td>
+                <td>小面</td>
+                <td>华南大区</td>
+                <td>广州市</td>
+                <td>广州地上铁</td>
+                <td>人保财险</td>
+                <td>2024-12-01</td>
+                <td class="text-right text-mono">¥ 1,500.00</td>
+                <td class="text-right text-mono">¥ 587.03</td>
+                <td><span class="tag tag-success">已承保</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-info">新延保</span></td>
+                <td class="text-mono">PUAB20254403Y000156004</td>
+                <td class="text-mono">LR83STGT2NB021234</td>
+                <td><strong>粤BXY1582</strong></td>
+                <td>瑞驰牌-EC75</td>
+                <td>轻卡</td>
+                <td>4.5T</td>
+                <td>华南大区</td>
+                <td>深圳市</td>
+                <td>深圳易维</td>
+                <td>人保财险</td>
+                <td>2025-08-01</td>
+                <td class="text-right text-mono">¥ 2,800.00</td>
+                <td class="text-right text-mono">¥ 2,641.51</td>
+                <td><span class="tag tag-success">已承保</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-warning">旧延保</span></td>
+                <td class="text-mono">PUAB20244403Y000118041</td>
+                <td class="text-mono">LGWEF4A53KJ887766</td>
+                <td><strong>粤BAH1881</strong></td>
+                <td>福田欧马可</td>
+                <td>轻卡</td>
+                <td>3.5T</td>
+                <td>华南大区</td>
+                <td>东莞市</td>
+                <td>地上铁</td>
+                <td>太保产险</td>
+                <td>2025-01-15</td>
+                <td class="text-right text-mono">¥ 3,200.00</td>
+                <td class="text-right text-mono">¥ 3,018.87</td>
+                <td><span class="tag tag-success">已承保</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-info">新延保</span></td>
+                <td class="text-mono">PUAB20254403Y000156122</td>
+                <td class="text-mono">LSGAA52H5JS456789</td>
+                <td><strong>粤BZ9988</strong></td>
+                <td>江淮帅铃</td>
+                <td>轻卡</td>
+                <td>4.5T</td>
+                <td>华东大区</td>
+                <td>上海市</td>
+                <td>地上铁</td>
+                <td>平安产险</td>
+                <td>2026-05-01</td>
+                <td class="text-right text-mono">¥ 3,500.00</td>
+                <td class="text-right text-mono">¥ 1,000.00</td>
+                <td><span class="tag tag-success">已承保</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-warning">旧延保</span></td>
+                <td class="text-mono">PUAB20244403Y000119002</td>
+                <td class="text-mono">LGWEF4A53LJ234567</td>
+                <td><strong>粤BBH2200</strong></td>
+                <td>比亚迪 T3</td>
+                <td>面系</td>
+                <td>中面</td>
+                <td>华南大区</td>
+                <td>广州市</td>
+                <td>易维</td>
+                <td>大家财险</td>
+                <td>2025-04-10</td>
+                <td class="text-right text-mono">¥ 2,100.00</td>
+                <td class="text-right text-mono">¥ 1,981.13</td>
+                <td><span class="tag tag-success">已承保</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-info">新延保</span></td>
+                <td class="text-mono">PUAB20264403Y000001003</td>
+                <td class="text-mono">LR83STGT2NE091234</td>
+                <td><strong>粤BDX0234</strong></td>
+                <td>瑞驰牌-EC35II</td>
+                <td>面系</td>
+                <td>小面</td>
+                <td>华南大区</td>
+                <td>深圳市</td>
+                <td>地上铁</td>
+                <td>人保财险</td>
+                <td>2026-07-01</td>
+                <td class="text-right text-mono">¥ 1,800.00</td>
+                <td class="text-right text-mono">¥ 130.19</td>
+                <td><span class="tag tag-success">已承保</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

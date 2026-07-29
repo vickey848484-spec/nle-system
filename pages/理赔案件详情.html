@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>理赔案件详情 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <style>
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md); }
+    .form-item { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 12px; color: var(--color-text-secondary); font-weight: 500; }
+    .form-label .req { color: var(--color-error); margin-left: 2px; }
+    .form-input, .form-select, .form-textarea {
+      padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      font-size: 13px; font-family: inherit; outline: none; background: var(--color-bg-white);
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--color-primary); }
+    .form-input.mono { font-family: "SF Mono", Menlo, monospace; }
+    .form-textarea { min-height: 60px; resize: vertical; }
+    .form-input:disabled { background: var(--color-bg); color: var(--color-text-secondary); }
+    .form-section-title {
+      font-size: 14px; font-weight: 600; margin-bottom: var(--space-md);
+      padding-bottom: 6px; border-bottom: 1px solid var(--color-border-light);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .form-section-title::before {
+      content: ''; width: 3px; height: 14px; background: var(--color-primary); border-radius: 2px;
+    }
+    .form-tip { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+    .form-tip.text-primary { color: var(--color-primary); }
+    .form-actions {
+      display: flex; gap: var(--space-sm); justify-content: flex-end;
+      padding-top: var(--space-md); border-top: 1px solid var(--color-border-light);
+    }
+    .form-saved {
+      position: fixed; top: 20px; right: 20px; background: var(--color-success);
+      color: white; padding: 12px 20px; border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg); z-index: 1000;
+    }
+    .status-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: var(--space-md) 0;
+    }
+    .status-flow .step {
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      background: var(--color-bg);
+      color: var(--color-text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      min-width: 80px;
+      text-align: center;
+    }
+    .status-flow .step.active { background: var(--color-primary); color: white; box-shadow: 0 2px 8px rgba(0,191,165,0.3); }
+    .status-flow .step.done { background: var(--color-primary-bg); color: var(--color-primary-dark); }
+    .status-flow .arrow { color: var(--color-text-muted); font-size: 18px; }
+
+    .timeline-log {
+      border-left: 2px solid var(--color-border);
+      padding-left: var(--space-md);
+      margin-left: 8px;
+    }
+    .timeline-log-item {
+      position: relative;
+      padding-bottom: var(--space-md);
+    }
+    .timeline-log-item::before {
+      content: '';
+      position: absolute;
+      left: -23px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--color-primary);
+    }
+    .timeline-log-time { font-size: 12px; color: var(--color-text-muted); }
+    .timeline-log-user { font-weight: 600; color: var(--color-text); margin-right: 8px; }
+    .timeline-log-content { font-size: 13px; color: var(--color-text); margin-top: 2px; }
+
+    .calc-box {
+      background: var(--color-primary-bg);
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      font-family: "SF Mono", monospace;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    .calc-box strong { color: var(--color-primary-dark); }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+        <a href="7-理赔共建.html" class="nav-item active"><span class="nav-icon">🔍</span><span>理赔共建系统</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <!-- 用户信息条 -->
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <a href="7-理赔共建.html">理赔共建系统</a>
+        <span class="separator">/</span>
+        <span id="modeTitle">新建案件</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title" id="pageTitle">📋 新建理赔案件</div>
+          <div class="page-subtitle" id="pageSubtitle">报案 → 立案 → 初审 → 复审 → 结案</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="window.location='7-理赔共建.html'">返回列表</button>
+          <button class="btn btn-primary" onclick="saveForm()" id="saveBtn">💾 保存</button>
+        </div>
+      </div>
+
+      <!-- 状态流转 -->
+      <div class="card">
+        <div class="status-flow" id="statusFlow">
+          <div class="step" data-step="报案">报案</div>
+          <span class="arrow">→</span>
+          <div class="step" data-step="立案">立案</div>
+          <span class="arrow">→</span>
+          <div class="step" data-step="初审">初审</div>
+          <span class="arrow">→</span>
+          <div class="step" data-step="复审">复审</div>
+          <span class="arrow">→</span>
+          <div class="step" data-step="结案">结案</div>
+        </div>
+      </div>
+
+      <form id="claimForm" onsubmit="event.preventDefault(); saveForm();">
+
+        <!-- 基本信息 -->
+        <div class="card">
+          <div class="card-title form-section-title">📋 一、基本信息</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">赔案号<span class="req">*</span></label>
+              <input type="text" id="赔案号" name="赔案号" class="form-input mono" required placeholder="例: PA2026-0001">
+              <div class="form-tip text-primary">系统自动生成或手动输入</div>
+            </div>
+            <div class="form-item">
+              <label class="form-label">保单号<span class="req">*</span></label>
+              <select id="保单号" name="保单号" class="form-select" required>
+                <option value="">请选择保单</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">车牌号</label>
+              <input type="text" id="车牌号" name="车牌号" class="form-input mono" readonly>
+            </div>
+            <div class="form-item">
+              <label class="form-label">承保保司</label>
+              <input type="text" id="承保保司" name="承保保司" class="form-input" readonly>
+            </div>
+            <div class="form-item">
+              <label class="form-label">报案人<span class="req">*</span></label>
+              <input type="text" name="报案人" class="form-input" required placeholder="报案公司/人">
+            </div>
+            <div class="form-item">
+              <label class="form-label">受理人</label>
+              <input type="text" name="受理人" class="form-input" placeholder="默认当前用户">
+            </div>
+            <div class="form-item">
+              <label class="form-label">报案日期<span class="req">*</span></label>
+              <input type="date" name="报案日期" class="form-input" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">出险日期<span class="req">*</span></label>
+              <input type="date" name="出险日期" class="form-input" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">出险地点<span class="req">*</span></label>
+              <input type="text" name="出险地点" class="form-input" required placeholder="例: 广州市天河区">
+            </div>
+            <div class="form-item">
+              <label class="form-label">损失类型<span class="req">*</span></label>
+              <select name="损失类型" class="form-select" required>
+                <option value="">请选择</option>
+                <option>车损</option>
+                <option>三责</option>
+                <option>人伤</option>
+                <option>盗抢</option>
+                <option>玻璃</option>
+                <option>自燃</option>
+                <option>其他</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">是否人伤</label>
+              <select name="是否人伤" class="form-select">
+                <option value="否">否</option>
+                <option value="是">是</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">是否异地</label>
+              <select name="是否异地" class="form-select">
+                <option value="否">否</option>
+                <option value="是">是</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 金额信息 -->
+        <div class="card">
+          <div class="card-title form-section-title">💰 二、金额信息</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">报案金额（元）<span class="req">*</span></label>
+              <input type="number" name="报案金额" id="报案金额" class="form-input mono" step="0.01" required>
+              <div class="form-tip text-primary" id="bigTip">≥2 万 自动标记为大案</div>
+            </div>
+            <div class="form-item">
+              <label class="form-label">已决金额（元）</label>
+              <input type="number" name="已决金额" id="已决金额" class="form-input mono" step="0.01" value="0">
+            </div>
+            <div class="form-item">
+              <label class="form-label">未决金额（元）</label>
+              <input type="number" name="未决金额" id="未决金额" class="form-input mono" step="0.01" value="0">
+              <div class="form-tip">自动 = 报案 - 已决</div>
+            </div>
+            <div class="form-item" style="grid-column: 1 / -1;">
+              <label class="form-label">赔款计算逻辑</label>
+              <div class="calc-box">
+                报案金额: <strong id="calc报案">¥ 0</strong> -
+                已决金额: <strong id="calc已决">¥ 0</strong> =
+                未决金额: <strong id="calc未决">¥ 0</strong>
+                <br>
+                赔付率（已决 / 报案）: <strong id="calc赔付率">0%</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 状态 -->
+        <div class="card">
+          <div class="card-title form-section-title">🔄 三、案件状态</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">当前状态<span class="req">*</span></label>
+              <select id="案件状态" name="案件状态" class="form-select" required>
+                <option value="报案">报案</option>
+                <option value="立案">立案</option>
+                <option value="初审">初审</option>
+                <option value="复审">复审</option>
+                <option value="结案">结案</option>
+                <option value="销案">销案</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">立案日期</label>
+              <input type="date" name="立案日期" class="form-input">
+            </div>
+            <div class="form-item">
+              <label class="form-label">结案日期</label>
+              <input type="date" name="结案日期" class="form-input">
+            </div>
+          </div>
+
+          <div style="margin-top: var(--space-md);">
+            <label class="form-label">案件流转操作</label>
+            <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn" onclick="advance('立案')">📥 立案</button>
+              <button type="button" class="btn" onclick="advance('初审')">🔍 初审通过</button>
+              <button type="button" class="btn" onclick="advance('复审')">✅ 复审通过</button>
+              <button type="button" class="btn btn-primary" onclick="advance('结案')">📋 结案</button>
+              <button type="button" class="btn btn-accent" onclick="advance('销案')">❌ 销案</button>
+            </div>
+            <div class="form-tip text-primary" style="margin-top: 8px;">点击流转会自动记录操作人和时间到审核记录</div>
+          </div>
+        </div>
+
+        <!-- 审核记录 -->
+        <div class="card" id="historyCard" style="display: none;">
+          <div class="card-title form-section-title">📜 四、审核记录</div>
+          <div class="timeline-log" id="historyList"></div>
+        </div>
+
+        <!-- 备注 -->
+        <div class="card">
+          <div class="card-title form-section-title">📝 五、备注</div>
+          <div class="form-grid">
+            <div class="form-item" style="grid-column: 1 / -1;">
+              <label class="form-label">备注 / 出险描述</label>
+              <textarea name="备注" class="form-textarea"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="form-actions">
+            <button type="button" class="btn" onclick="window.location='7-理赔共建.html'">取消</button>
+            <button type="button" class="btn" onclick="deleteClaim()">删除</button>
+            <button type="submit" class="btn btn-primary">💾 保存</button>
+          </div>
+        </div>
+
+      </form>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+
+    const params = new URLSearchParams(location.search);
+    const claimId = params.get('id');
+    const isEdit = !!claimId;
+    let currentClaim = null;
+
+    if (!isEdit) {
+      document.getElementById('pageTitle').textContent = '📋 新建理赔案件';
+      document.getElementById('modeTitle').textContent = '新建案件';
+    } else {
+      document.getElementById('pageTitle').textContent = '📋 理赔案件详情';
+      document.getElementById('modeTitle').textContent = '案件详情';
+    }
+
+    // 加载保单选项
+    function loadPolicies() {
+      const select = document.getElementById('保单号');
+      const policies = getList(STORAGE_KEYS.carPolicies);
+      policies.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.保单号;
+        opt.textContent = p.保单号 + ' - ' + (p.投保人 || '') + ' - ' + (p.车牌号 || '');
+        opt.dataset.policy = JSON.stringify(p);
+        select.appendChild(opt);
+      });
+    }
+
+    document.getElementById('保单号').addEventListener('change', e => {
+      const opt = e.target.selectedOptions[0];
+      if (opt && opt.dataset.policy) {
+        const p = JSON.parse(opt.dataset.policy);
+        document.getElementById('车牌号').value = p.车牌号 || '';
+        document.getElementById('承保保司').value = p.承保保司 || '';
+      }
+    });
+
+    // 实时计算
+    function recalc() {
+      const 报案 = parseFloat(document.getElementById('报案金额').value) || 0;
+      const 已决 = parseFloat(document.getElementById('已决金额').value) || 0;
+      const 未决 = 报案 - 已决;
+      document.getElementById('未决金额').value = 未决 > 0 ? 未决.toFixed(2) : 0;
+      document.getElementById('calc报案').textContent = '¥ ' + 报案.toLocaleString();
+      document.getElementById('calc已决').textContent = '¥ ' + 已决.toLocaleString();
+      document.getElementById('calc未决').textContent = '¥ ' + Math.max(0, 未决).toLocaleString();
+      const 赔付率 = 报案 ? ((已决 / 报案) * 100).toFixed(1) : 0;
+      document.getElementById('calc赔付率').textContent = 赔付率 + '%';
+
+      // 大案判定
+      const tip = document.getElementById('bigTip');
+      if (报案 >= 20000) {
+        tip.innerHTML = '⚠️ <span style="color: var(--color-error);">已标记为大案（≥2 万）</span>';
+      } else {
+        tip.textContent = '≥2 万 自动标记为大案';
+      }
+    }
+
+    ['报案金额', '已决金额'].forEach(id => {
+      document.getElementById(id).addEventListener('input', recalc);
+    });
+
+    // 状态流转条
+    function updateStatusFlow(status) {
+      const order = ['报案', '立案', '初审', '复审', '结案'];
+      const idx = order.indexOf(status);
+      document.querySelectorAll('#statusFlow .step').forEach(el => {
+        const s = el.dataset.step;
+        el.classList.remove('active', 'done');
+        const sIdx = order.indexOf(s);
+        if (sIdx < idx) el.classList.add('done');
+        else if (sIdx === idx) el.classList.add('active');
+      });
+    }
+
+    function renderHistory(history) {
+      const card = document.getElementById('historyCard');
+      const list = document.getElementById('historyList');
+      if (!history || history.length === 0) {
+        card.style.display = 'none';
+        return;
+      }
+      card.style.display = 'block';
+      list.innerHTML = history.map(h => `
+        <div class="timeline-log-item">
+          <div class="timeline-log-time">${h.时间}</div>
+          <div><span class="timeline-log-user">${h.操作人}</span><span class="timeline-log-content">${h.内容}</span></div>
+        </div>
+      `).join('');
+    }
+
+    // 加载案件
+    if (isEdit) {
+      const claims = getList(STORAGE_KEYS.claims);
+      currentClaim = claims.find(c => c.id === claimId);
+      if (currentClaim) {
+        document.getElementById('赔案号').value = currentClaim.赔案号;
+        document.getElementById('赔案号').disabled = true;
+        document.getElementById('保单号').value = currentClaim.保单号;
+        document.getElementById('车牌号').value = currentClaim.车牌号 || '';
+        document.getElementById('承保保司').value = currentClaim.承保保司 || '';
+        const fields = ['报案人', '受理人', '报案日期', '出险日期', '出险地点', '损失类型', '是否人伤', '是否异地', '报案金额', '已决金额', '未决金额', '案件状态', '立案日期', '结案日期', '备注'];
+        fields.forEach(f => {
+          const el = document.querySelector(`[name="${f}"]`);
+          if (el) el.value = currentClaim[f] || '';
+        });
+        updateStatusFlow(currentClaim.案件状态);
+        renderHistory(currentClaim.审核记录);
+        recalc();
+      } else {
+        alert('案件不存在');
+        window.location = '7-理赔共建.html';
+      }
+    } else {
+      // 新建模式：自动生成赔案号
+      const claims = getList(STORAGE_KEYS.claims);
+      const year = new Date().getFullYear();
+      const yearCount = claims.filter(c => c.赔案号 && c.赔案号.includes('PA' + year)).length;
+      document.getElementById('赔案号').value = 'PA' + year + '-' + String(yearCount + 1).padStart(4, '0');
+      updateStatusFlow('报案');
+      // 默认日期
+      const today = new Date().toISOString().slice(0, 10);
+      document.querySelector('input[name="报案日期"]').value = today;
+      document.querySelector('input[name="出险日期"]').value = today;
+    }
+
+    // 状态流转操作
+    function advance(targetStatus) {
+      const session = getSession();
+      const operator = session ? session.name : '系统';
+      const now = new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-');
+
+      // 取当前状态
+      const cur = document.getElementById('案件状态').value;
+      if (targetStatus === '销案') {
+        if (!confirm('确定销案？此操作不可撤销。')) return;
+      }
+      document.getElementById('案件状态').value = targetStatus;
+
+      // 设置关联日期
+      if (targetStatus === '立案' && !document.querySelector('input[name="立案日期"]').value) {
+        document.querySelector('input[name="立案日期"]').value = new Date().toISOString().slice(0, 10);
+      }
+      if (targetStatus === '结案' && !document.querySelector('input[name="结案日期"]').value) {
+        document.querySelector('input[name="结案日期"]').value = new Date().toISOString().slice(0, 10);
+        // 结案时默认已决 = 报案
+        const 报案 = parseFloat(document.getElementById('报案金额').value) || 0;
+        document.getElementById('已决金额').value = 报案;
+        recalc();
+      }
+
+      updateStatusFlow(targetStatus);
+
+      // 暂存审核记录到内存，保存时合并
+      const actionLabel = {
+        '立案': '立案审核通过',
+        '初审': '初审通过',
+        '复审': '复审通过',
+        '结案': '结案',
+        '销案': '销案'
+      };
+      if (!window._tempHistory) window._tempHistory = [];
+      if (cur !== targetStatus) {
+        window._tempHistory.push({
+          时间: now,
+          操作人: operator,
+          内容: actionLabel[targetStatus] || ('状态变更为 ' + targetStatus)
+        });
+      }
+
+      showSaved(targetStatus + ' 成功');
+    }
+
+    function showSaved(msg) {
+      const d = document.createElement('div');
+      d.className = 'form-saved';
+      d.innerHTML = '✅ ' + msg;
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 2000);
+    }
+
+    function saveForm() {
+      const form = document.getElementById('claimForm');
+      const data = {};
+      new FormData(form).forEach((v, k) => { data[k] = v; });
+
+      if (!data.赔案号 || !data.保单号 || !data.报案金额) {
+        alert('请填写必填字段');
+        return;
+      }
+
+      data.报案金额 = parseFloat(data.报案金额) || 0;
+      data.已决金额 = parseFloat(data.已决金额) || 0;
+      data.未决金额 = parseFloat(data.未决金额) || 0;
+      data.是否大案 = data.报案金额 >= 20000 || data.未决金额 >= 20000;
+
+      // 合并审核记录
+      const existingHistory = (currentClaim && currentClaim.审核记录) || [];
+      data.审核记录 = [...existingHistory, ...(window._tempHistory || [])];
+      window._tempHistory = [];
+
+      // 唯一性校验
+      const claims = getList(STORAGE_KEYS.claims);
+      const dup = claims.find(c => c.赔案号 === data.赔案号 && c.id !== claimId);
+      if (dup) {
+        alert('赔案号 ' + data.赔案号 + ' 已存在！');
+        return;
+      }
+
+      if (isEdit) {
+        updateItem(STORAGE_KEYS.claims, claimId, data);
+        logOperation('update', 'claims', claimId);
+      } else {
+        addItem(STORAGE_KEYS.claims, data);
+        logOperation('create', 'claims', data.赔案号);
+      }
+
+      showSaved('保存成功');
+      setTimeout(() => window.location = '7-理赔共建.html', 800);
+    }
+
+    function deleteClaim() {
+      if (!isEdit) return;
+      if (!confirm('确定删除此案件？此操作不可撤销。')) return;
+      deleteItem(STORAGE_KEYS.claims, claimId);
+      logOperation('delete', 'claims', claimId);
+      window.location = '7-理赔共建.html';
+    }
+
+    loadPolicies();
+  </script>
+</body>
+</html>

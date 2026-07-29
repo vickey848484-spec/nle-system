@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>佣金管理 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="../js/data.js"></script>
+  <script src="../js/charts.js"></script>
+  <style>
+    .chart-box { background: var(--color-bg-white); border-radius: var(--radius-lg); padding: var(--space-lg); box-shadow: var(--shadow-sm); margin-bottom: var(--space-md); }
+    .chart-box-title { font-size: 14px; font-weight: 600; margin-bottom: var(--space-md); display: flex; justify-content: space-between; align-items: center; }
+    .chart-canvas { width: 100%; height: 280px; }
+    .chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+    @media (max-width: 968px) { .chart-grid-2 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item active"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">系统</div>
+        <a href="#" class="nav-item"><span class="nav-icon">⚙️</span><span>基础数据</span></a>
+        <a href="#" class="nav-item"><span class="nav-icon">📋</span><span>操作日志</span></a>
+      </div>
+      <!-- 用户信息条 -->
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <span>佣金管理</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">佣金管理</div>
+          <div class="page-subtitle">结算看板 · 逐单明细 · 监管报表 · 截至 2026 年 7 月</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="exportCSV()">📥 导出 Excel</button>
+          <button class="btn">📊 差额趋势分析</button>
+          <a href="佣金结算录入.html" class="btn btn-primary" id="录入结算Btn">💰 录入结算</a>
+        </div>
+      </div>
+
+      <!-- 第一层：结算看板 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📊 结算总览</div>
+          <select class="filter-select">
+            <option>2026 年</option>
+            <option>2025 年</option>
+          </select>
+        </div>
+
+        <div class="kpi-grid" id="kpiGrid"></div>
+
+        <!-- 分板块明细（实时计算） -->
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>板块</th>
+                <th class="text-right">应结佣金</th>
+                <th class="text-right">实结佣金</th>
+                <th class="text-right">未结佣金</th>
+                <th class="text-right">结算进度</th>
+                <th>状态</th>
+              </tr>
+            </thead>
+            <tbody id="segmentTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 第二层：结算数据明细 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 结算数据明细 · 逐单列表</div>
+          <div style="display: flex; gap: 8px;">
+            <select class="filter-select">
+              <option>全部状态</option>
+              <option>待结算</option>
+              <option>待开票</option>
+              <option>已开票</option>
+              <option>已入账</option>
+            </select>
+            <select class="filter-select">
+              <option>全部保司</option>
+              <option>平安产险</option>
+              <option>太保产险</option>
+              <option>大家财险</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <input type="text" class="search-input" placeholder="搜索保单号 / 批单号 / 投保人">
+          <button class="btn">🔄 重置</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>保单号</th>
+                <th>批单号</th>
+                <th>投保人</th>
+                <th>承保保司</th>
+                <th>板块</th>
+                <th class="text-right">不含税保费</th>
+                <th class="text-right">佣金比例</th>
+                <th class="text-right">应结佣金</th>
+                <th class="text-right">实结佣金</th>
+                <th>结算单号</th>
+                <th>状态</th>
+              </tr>
+            </thead>
+            <tbody id="commissionTableBody"></tbody>
+          </table>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-md); font-size: 13px; color: var(--color-text-secondary);">
+          <div id="commissionInfo">共 0 条记录</div>
+        </div>
+      </div>
+
+      <!-- 图表 -->
+      <div class="chart-grid-2">
+        <div class="chart-box">
+          <div class="chart-box-title">
+            <span>🥧 板块应结/实结佣金对比</span>
+          </div>
+          <div id="segmentChart" class="chart-canvas"></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-box-title">
+            <span>📊 结算状态分布</span>
+          </div>
+          <div id="statusPie" class="chart-canvas"></div>
+        </div>
+      </div>
+
+      <!-- 第三层：报表中心 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📈 报表中心</div>
+        </div>
+        <div class="module-grid">
+          <div class="module-card">
+            <div class="module-card-icon">📊</div>
+            <div class="module-card-title">差额趋势分析</div>
+            <div class="module-card-desc">按保司、按月度展示应结/实结差异趋势</div>
+          </div>
+          <div class="module-card secondary">
+            <div class="module-card-icon">📋</div>
+            <div class="module-card-title">月度统计报表</div>
+            <div class="module-card-desc">按月展示应结/实结佣金，作为内部对账依据</div>
+          </div>
+          <div class="module-card accent">
+            <div class="module-card-icon">🏛️</div>
+            <div class="module-card-title">监管报表 · 产险</div>
+            <div class="module-card-desc">按监管机构固定格式生成，可直接导出</div>
+          </div>
+          <div class="module-card warning">
+            <div class="module-card-icon">🏛️</div>
+            <div class="module-card-title">监管报表 · 人身险</div>
+            <div class="module-card-desc">按监管机构固定格式生成，可直接导出</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+    requireAuth();
+
+    const session = getSession();
+    const perms = getPermissions(session.role);
+
+let commissions = [];
+
+    function loadData() {
+      commissions = getList(STORAGE_KEYS.commissions);
+    }
+
+    function statusTag(s) {
+      const map = {
+        '已入账': '<span class="tag tag-success">已入账</span>',
+        '已开票': '<span class="tag tag-success">已开票</span>',
+        '待开票': '<span class="tag tag-warning">待开票</span>',
+        '待结算': '<span class="tag tag-info">待结算</span>',
+        '待核对': '<span class="tag tag-error">待核对</span>'
+      };
+      return map[s] || ('<span class="tag tag-default">' + s + '</span>');
+    }
+
+    function segmentTag(s) {
+      if (s === '车险') return '<span class="tag tag-default">车险</span>';
+      if (s === '延保') return '<span class="tag tag-warning">延保</span>';
+      if (s === '其他') return '<span class="tag tag-info">其他</span>';
+      return s;
+    }
+
+    function renderKPI() {
+      const total = commissions.length;
+      const 应结 = commissions.reduce((s, c) => s + (c.应结佣金 || 0), 0);
+      const 实结 = commissions.reduce((s, c) => s + (c.实结佣金 || 0), 0);
+      const 差额 = 应结 - 实结;
+      const 未结清 = commissions.filter(c => c.实结佣金 < c.应结佣金).length;
+
+      document.getElementById('kpiGrid').innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-label">总应结佣金（不含税）</div>
+          <div class="kpi-value">¥ ${(应结 / 10000).toFixed(2)}<span class="unit">万</span></div>
+          <div class="kpi-change">按约定比例计算</div>
+        </div>
+        <div class="kpi-card accent">
+          <div class="kpi-label">总实结佣金（不含税）</div>
+          <div class="kpi-value">¥ ${(实结 / 10000).toFixed(2)}<span class="unit">万</span></div>
+          <div class="kpi-change up">外部实付</div>
+        </div>
+        <div class="kpi-card warning">
+          <div class="kpi-label">总差额</div>
+          <div class="kpi-value">¥ ${(差额 / 10000).toFixed(2)}<span class="unit">万</span></div>
+          <div class="kpi-change down">${应结 ? ((差额 / 应结) * 100).toFixed(1) : 0}% 差异率</div>
+        </div>
+        <div class="kpi-card secondary">
+          <div class="kpi-label">未结清保单数</div>
+          <div class="kpi-value">${未结清}</div>
+          <div class="kpi-change">已结清 ${total - 未结清} 单</div>
+        </div>
+      `;
+    }
+
+    function renderSegments() {
+      const segs = ['车险', '延保', '其他'];
+      const tbody = document.getElementById('segmentTableBody');
+      let total应结 = 0, total实结 = 0;
+
+      const rows = segs.map(seg => {
+        const items = commissions.filter(c => c.板块 === seg);
+        const 应结 = items.reduce((s, c) => s + (c.应结佣金 || 0), 0);
+        const 实结 = items.reduce((s, c) => s + (c.实结佣金 || 0), 0);
+        const 未结 = 应结 - 实结;
+        total应结 += 应结;
+        total实结 += 实结;
+        const 进度 = 应结 ? (实结 / 应结 * 100).toFixed(1) : 0;
+        const icon = seg === '车险' ? '🚗' : (seg === '延保' ? '🔧' : '🏢');
+        const status = 未结 > 1 ? '<span class="tag tag-warning">待核对</span>' : '<span class="tag tag-success">正常</span>';
+        const barClass = 未结 > 1 ? 'warning' : '';
+        return `
+          <tr>
+            <td><strong>${icon} ${seg}</strong></td>
+            <td class="text-right text-mono">¥ ${应结.toFixed(2)}</td>
+            <td class="text-right text-mono">¥ ${实结.toFixed(2)}</td>
+            <td class="text-right text-mono">¥ ${未结.toFixed(2)}</td>
+            <td><div class="progress"><div class="progress-bar ${barClass}" style="width: ${Math.min(100, 进度)}%;"></div></div></td>
+            <td>${status}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const total未结 = total应结 - total实结;
+      const total进度 = total应结 ? (total实结 / total应结 * 100).toFixed(1) : 0;
+      tbody.innerHTML = rows + `
+        <tr style="background: var(--color-bg); font-weight: 600;">
+          <td><strong>合计</strong></td>
+          <td class="text-right text-mono">¥ ${total应结.toFixed(2)}</td>
+          <td class="text-right text-mono">¥ ${total实结.toFixed(2)}</td>
+          <td class="text-right text-mono">¥ ${total未结.toFixed(2)}</td>
+          <td><div class="progress"><div class="progress-bar" style="width: ${Math.min(100, total进度)}%;"></div></div></td>
+          <td></td>
+        </tr>
+      `;
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('commissionTableBody');
+      if (commissions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" class="empty"><div class="empty-icon">📭</div>暂无佣金数据</td></tr>';
+        document.getElementById('commissionInfo').textContent = '共 0 条记录';
+        return;
+      }
+      tbody.innerHTML = commissions.map(c => `
+        <tr>
+          <td class="text-mono">${c.保单号}</td>
+          <td class="text-mono">${c.批单号 || '—'}</td>
+          <td>${c.投保人}</td>
+          <td>${c.承保保司}</td>
+          <td>${segmentTag(c.板块)}</td>
+          <td class="text-right text-mono">¥ ${(c.不含税保费 || 0).toFixed(2)}</td>
+          <td class="text-right text-mono">${((c.佣金比例 || 0) * 100).toFixed(0)}%</td>
+          <td class="text-right text-mono">¥ ${(c.应结佣金 || 0).toFixed(2)}</td>
+          <td class="text-right text-mono">¥ ${(c.实结佣金 || 0).toFixed(2)}</td>
+          <td class="text-mono">${c.结算单号 || '—'}</td>
+          <td>${statusTag(c.结算状态)}</td>
+        </tr>
+      `).join('');
+      document.getElementById('commissionInfo').textContent = '共 ' + commissions.length + ' 条记录';
+    }
+
+    function exportCSV() {
+      const headers = ['保单号', '批单号', '投保人', '承保保司', '板块', '不含税保费', '佣金比例', '应结佣金', '实结佣金', '结算单号', '结算状态'];
+      const rows = commissions.map(c => [c.保单号, c.批单号 || '', c.投保人, c.承保保司, c.板块, c.不含税保费, c.佣金比例, c.应结佣金, c.实结佣金, c.结算单号 || '', c.结算状态]);
+      const csv = '﻿' + [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = '佣金结算_' + new Date().toISOString().slice(0, 10) + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    loadData();
+    renderKPI();
+    renderSegments();
+    renderTable();
+
+    // 权限：operator 不能编辑佣金
+    if (session.role === 'operator') {
+      const btn = document.getElementById('录入结算Btn');
+      if (btn) {
+        btn.style.display = 'none';
+      }
+    }
+
+    // 图表
+    function renderSegmentChart() {
+      const segs = ['车险', '延保', '其他'];
+      const data = segs.map(seg => {
+        const items = commissions.filter(c => c.板块 === seg);
+        return {
+          name: seg,
+          应结: Math.round(items.reduce((s, c) => s + (c.应结佣金 || 0), 0)),
+          实结: Math.round(items.reduce((s, c) => s + (c.实结佣金 || 0), 0))
+        };
+      });
+      const dom = document.getElementById('segmentChart');
+      const chart = echarts.init(dom);
+      chart.setOption({
+        color: [CHART_COLORS.primary, CHART_COLORS.accent],
+        tooltip: { trigger: 'axis', backgroundColor: '#FFF', borderColor: CHART_COLORS.border, borderWidth: 1 },
+        legend: { bottom: 0, textStyle: { color: CHART_COLORS.textSecondary } },
+        grid: { left: 60, right: 30, top: 30, bottom: 50 },
+        xAxis: { type: 'category', data: data.map(d => d.name), axisLabel: { color: CHART_COLORS.textSecondary } },
+        yAxis: { type: 'value', axisLabel: { color: CHART_COLORS.textSecondary, formatter: '¥{value}' }, splitLine: { lineStyle: { type: 'dashed', color: CHART_COLORS.border } } },
+        series: [
+          { name: '应结', type: 'bar', data: data.map(d => d.应结), itemStyle: { color: CHART_COLORS.primary, borderRadius: [4, 4, 0, 0] } },
+          { name: '实结', type: 'bar', data: data.map(d => d.实结), itemStyle: { color: CHART_COLORS.accent, borderRadius: [4, 4, 0, 0] } }
+        ]
+      });
+      window.addEventListener('resize', () => chart.resize());
+    }
+
+    function renderStatusPie() {
+      const data = {};
+      commissions.forEach(c => {
+        data[c.结算状态] = (data[c.结算状态] || 0) + 1;
+      });
+      const items = Object.keys(data).map(k => ({ name: k, value: data[k] }));
+      if (items.length === 0) {
+        document.getElementById('statusPie').innerHTML = '<div class="empty"><div class="empty-icon">📊</div>暂无数据</div>';
+        return;
+      }
+      pieChart('statusPie', { data: items });
+    }
+
+    renderSegmentChart();
+    renderStatusPie();
+  </script>
+</body>
+</html>

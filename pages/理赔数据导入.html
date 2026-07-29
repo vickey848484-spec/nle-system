@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>理赔数据导入 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <style>
+    .upload-zone {
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--color-bg);
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--color-primary);
+      background: var(--color-primary-bg);
+    }
+    .upload-zone .icon { font-size: 48px; margin-bottom: var(--space-md); }
+    .upload-zone .text { color: var(--color-text-secondary); font-size: 14px; }
+    .upload-zone .text strong { color: var(--color-primary); }
+    .ocr-result {
+      background: var(--color-primary-bg);
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      margin-top: var(--space-md);
+      display: none;
+    }
+    .ocr-result .loading {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--color-primary-dark);
+    }
+    .ocr-result .loading::after {
+      content: '';
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--color-primary);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .ocr-fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+    .ocr-field {
+      background: white;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+    }
+    .ocr-field-label { font-size: 11px; color: var(--color-text-muted); }
+    .ocr-field-value { font-size: 14px; font-weight: 600; color: var(--color-text); font-family: "SF Mono", monospace; margin-top: 2px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md); }
+    .form-item { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 12px; color: var(--color-text-secondary); font-weight: 500; }
+    .form-label .req { color: var(--color-error); margin-left: 2px; }
+    .form-input, .form-select, .form-textarea {
+      padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      font-size: 13px; font-family: inherit; outline: none; background: var(--color-bg-white);
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--color-primary); }
+    .form-input.mono { font-family: "SF Mono", Menlo, monospace; }
+    .form-section-title {
+      font-size: 14px; font-weight: 600; margin-bottom: var(--space-md);
+      padding-bottom: 6px; border-bottom: 1px solid var(--color-border-light);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .form-section-title::before {
+      content: ''; width: 3px; height: 14px; background: var(--color-primary); border-radius: 2px;
+    }
+    .form-tip { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+    .form-tip.text-primary { color: var(--color-primary); }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+        <a href="7-理赔共建.html" class="nav-item active"><span class="nav-icon">🔍</span><span>理赔共建系统</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <a href="7-理赔共建.html">理赔共建系统</a>
+        <span class="separator">/</span>
+        <span>数据导入</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">📤 理赔数据导入</div>
+          <div class="page-subtitle">批量导入 · OCR 识别 · 自动对账</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="window.location='7-理赔共建.html'">返回列表</button>
+        </div>
+      </div>
+
+      <!-- Tab 切换 -->
+      <div class="card">
+        <div style="display: flex; gap: 8px; margin-bottom: var(--space-md);">
+          <button class="btn btn-primary" id="tab批量" onclick="switchTab('批量')">📊 批量导入</button>
+          <button class="btn" id="tab结算单" onclick="switchTab('结算单')">📄 外部结算单 OCR</button>
+          <button class="btn" id="tab保单" onclick="switchTab('保单')">📷 保单扫描件 OCR</button>
+        </div>
+      </div>
+
+      <!-- 批量导入 -->
+      <div class="card" id="panel批量">
+        <div class="card-title form-section-title">📊 批量导入理赔明细（Excel/CSV）</div>
+
+        <div class="upload-zone" id="excelZone" onclick="document.getElementById('excelInput').click()">
+          <div class="icon">📊</div>
+          <div class="text">
+            <strong>点击选择文件</strong> 或拖拽 Excel/CSV 到此处<br>
+            <span style="font-size: 12px;">支持 .xlsx / .xls / .csv · 最多 5000 行</span>
+          </div>
+          <input type="file" id="excelInput" accept=".xlsx,.xls,.csv" style="display: none;">
+        </div>
+
+        <div id="excelResult" class="ocr-result">
+          <div class="loading">文件已选择：<strong id="excelFileName"></strong></div>
+          <div style="margin-top: var(--space-md); font-size: 13px; color: var(--color-text-secondary);">
+            <strong>必填字段</strong>：赔案号、保单号、车牌号、报案日期、报案金额<br>
+            <strong>可选字段</strong>：出险日期、出险地点、损失类型、是否人伤、是否异地、备注
+          </div>
+          <div style="margin-top: var(--space-md);">
+            <button class="btn btn-primary" onclick="parseExcel()">📥 解析并导入</button>
+            <button class="btn" onclick="downloadTemplate()">📥 下载模板</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 外部结算单 OCR -->
+      <div class="card" id="panel结算单" style="display: none;">
+        <div class="card-title form-section-title">📄 外部结算单 OCR 识别</div>
+        <div class="form-tip" style="margin-bottom: var(--space-md);">上传保司提供的结算单扫描件/PDF，系统自动识别字段。生产环境对接腾讯云/阿里云 OCR。</div>
+
+        <div class="upload-zone" id="settlementZone" onclick="document.getElementById('settlementInput').click()">
+          <div class="icon">📄</div>
+          <div class="text">
+            <strong>点击选择扫描件</strong> 或拖拽文件到此处<br>
+            <span style="font-size: 12px;">支持 PDF / JPG / PNG · 自动模糊匹配"保单号+批单号"</span>
+          </div>
+          <input type="file" id="settlementInput" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+        </div>
+
+        <div id="settlementResult" class="ocr-result">
+          <div class="loading">OCR 识别中</div>
+          <div class="ocr-fields" id="settlementFields"></div>
+          <div style="margin-top: var(--space-md);">
+            <button class="btn btn-primary" onclick="confirmSettlement()">✓ 确认录入</button>
+            <button class="btn" onclick="resetOcr('settlement')">重新识别</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 保单扫描件 OCR -->
+      <div class="card" id="panel保单" style="display: none;">
+        <div class="card-title form-section-title">📷 保单扫描件 OCR 识别</div>
+        <div class="form-tip" style="margin-bottom: var(--space-md);">上传保单扫描件，系统自动识别保单号、批单号、保费、险种等关键字段。</div>
+
+        <div class="upload-zone" id="policyZone" onclick="document.getElementById('policyInput').click()">
+          <div class="icon">📷</div>
+          <div class="text">
+            <strong>点击选择保单扫描件</strong> 或拖拽文件到此处<br>
+            <span style="font-size: 12px;">支持 PDF / JPG / PNG</span>
+          </div>
+          <input type="file" id="policyInput" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+        </div>
+
+        <div id="policyResult" class="ocr-result">
+          <div class="loading">OCR 识别中</div>
+          <div class="ocr-fields" id="policyFields"></div>
+          <div style="margin-top: var(--space-md);">
+            <button class="btn btn-primary" onclick="confirmPolicy()">✓ 确认录入保单</button>
+            <button class="btn" onclick="resetOcr('policy')">重新识别</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 导入历史 -->
+      <div class="card">
+        <div class="card-title form-section-title">📜 导入历史</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>时间</th>
+                <th>类型</th>
+                <th>文件</th>
+                <th class="text-right">导入条数</th>
+                <th>操作人</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody">
+              <tr><td colspan="5" class="empty">暂无导入历史</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+
+    function switchTab(tab) {
+      ['批量', '结算单', '保单'].forEach(t => {
+        document.getElementById('panel' + t).style.display = (t === tab ? 'block' : 'none');
+        document.getElementById('tab' + t).classList.toggle('btn-primary', t === tab);
+        document.getElementById('tab' + t).classList.toggle('btn', t !== tab);
+      });
+    }
+
+    // 拖拽支持
+    function setupDragDrop(zoneId, inputId, onSelect) {
+      const zone = document.getElementById(zoneId);
+      zone.addEventListener('dragover', e => {
+        e.preventDefault();
+        zone.classList.add('dragover');
+      });
+      zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+      zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+          onSelect(e.dataTransfer.files[0]);
+        }
+      });
+      document.getElementById(inputId).addEventListener('change', e => {
+        if (e.target.files.length) onSelect(e.target.files[0]);
+      });
+    }
+
+    // 批量 Excel
+    setupDragDrop('excelZone', 'excelInput', file => {
+      document.getElementById('excelFileName').textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+      document.getElementById('excelResult').style.display = 'block';
+      window._excelFile = file;
+    });
+
+    function downloadTemplate() {
+      const headers = ['赔案号', '保单号', '车牌号', '承保保司', '报案人', '报案日期', '出险日期', '出险地点', '损失类型', '报案金额', '是否人伤', '是否异地', '备注'];
+      const sample = ['PA2026-0001', 'PC-2025-100002', '粤BAY0592', '平安产险', '广州地上铁', '2026-05-12', '2026-05-11', '广州市天河区', '车损', 35000, '否', '否', '右后侧剐蹭'];
+      const csv = '﻿' + [headers, sample].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = '理赔明细_模板.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function parseExcel() {
+      if (!window._excelFile) {
+        alert('请先选择文件');
+        return;
+      }
+      const session = getSession();
+      // 演示：模拟导入 3 条
+      const samples = [
+        { 赔案号: 'PA' + new Date().getFullYear() + '-0101', 保单号: 'PC-2025-100002', 车牌号: '粤BAY0592', 承保保司: '平安产险', 报案人: '广州地上铁', 报案日期: '2026-07-20', 出险日期: '2026-07-19', 出险地点: '广州市天河区', 损失类型: '车损', 报案金额: 18000, 是否人伤: '否', 是否异地: '否', 备注: '导入数据' },
+        { 赔案号: 'PA' + new Date().getFullYear() + '-0102', 保单号: 'TB-2025-200156', 车牌号: '粤BDX0234', 承保保司: '太保产险', 报案人: '深圳易维', 报案日期: '2026-07-21', 出险日期: '2026-07-20', 出险地点: '深圳市南山区', 损失类型: '玻璃', 报案金额: 2500, 是否人伤: '否', 是否异地: '否', 备注: '导入数据' },
+        { 赔案号: 'PA' + new Date().getFullYear() + '-0103', 保单号: 'PC-2025-100017', 车牌号: '粤BZ0118', 承保保司: '平安产险', 报案人: '广州地上铁', 报案日期: '2026-07-22', 出险日期: '2026-07-21', 出险地点: '东莞市', 损失类型: '车损', 报案金额: 8500, 是否人伤: '否', 是否异地: '是', 备注: '导入数据' }
+      ];
+
+      let imported = 0;
+      samples.forEach(s => {
+        s.案件状态 = '报案';
+        s.已决金额 = 0;
+        s.未决金额 = s.报案金额;
+        s.是否大案 = s.报案金额 >= 20000;
+        s.审核记录 = [{ 时间: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-'), 操作人: session ? session.name : '导入', 内容: '数据导入' }];
+        addItem(STORAGE_KEYS.claims, s);
+        imported++;
+      });
+
+      // 记录历史
+      const history = JSON.parse(localStorage.getItem('nle.importHistory') || '[]');
+      history.unshift({
+        时间: new Date().toLocaleString('zh-CN', { hour12: false }),
+        类型: '批量导入',
+        文件: window._excelFile.name,
+        条数: imported,
+        操作人: session ? session.name : '系统'
+      });
+      localStorage.setItem('nle.importHistory', JSON.stringify(history.slice(0, 50)));
+
+      alert('✅ 已导入 ' + imported + ' 条理赔数据');
+      renderHistory();
+      document.getElementById('excelResult').style.display = 'none';
+    }
+
+    // 结算单 OCR
+    setupDragDrop('settlementZone', 'settlementInput', async file => {
+      const result = document.getElementById('settlementResult');
+      const fields = document.getElementById('settlementFields');
+      const config = getOcrConfig();
+      result.style.display = 'block';
+      fields.innerHTML = '<div class="loading">OCR 识别中（' + (config.provider || 'mock') + ' 模式）</div>';
+
+      try {
+        const ocrResult = await ocrRecognize(file);
+        if (!ocrResult.success) throw new Error('识别失败');
+        const labels = Object.keys(ocrResult.fields);
+        fields.innerHTML = labels.map(k => `
+          <div class="ocr-field">
+            <div class="ocr-field-label">${k}</div>
+            <div class="ocr-field-value">${ocrResult.fields[k]}</div>
+          </div>
+        `).join('') + '<div style="grid-column: 1 / -1; font-size: 11px; color: var(--color-text-muted); margin-top: 8px;">✓ 识别引擎：' + ocrResult.provider + '</div>';
+        window._settlementOcr = ocrResult.fields;
+      } catch (e) {
+        fields.innerHTML = '<div style="color: var(--color-error); padding: 12px;">❌ ' + e.message + '</div>';
+      }
+    });
+
+    function confirmSettlement() {
+      if (!window._settlementOcr) return;
+      const session = getSession();
+      const data = {
+        保单号: 'PC-2025-100002',
+        批单号: '',
+        投保人: '广州地上铁',
+        承保保司: '平安产险',
+        板块: '车险',
+        不含税保费: Math.random() * 5000 + 1000,
+        佣金比例: 0.25,
+        应结佣金: Math.random() * 1000 + 200,
+        实结佣金: Math.random() * 1000 + 200,
+        结算单号: window._settlementOcr[0].value,
+        结算状态: '待开票'
+      };
+      addItem(STORAGE_KEYS.commissions, data);
+
+      const history = JSON.parse(localStorage.getItem('nle.importHistory') || '[]');
+      history.unshift({
+        时间: new Date().toLocaleString('zh-CN', { hour12: false }),
+        类型: 'OCR 识别',
+        文件: '外部结算单扫描件',
+        条数: 1,
+        操作人: session ? session.name : '系统'
+      });
+      localStorage.setItem('nle.importHistory', JSON.stringify(history.slice(0, 50)));
+
+      alert('✅ 结算单已识别并录入');
+      resetOcr('settlement');
+      renderHistory();
+    }
+
+    // 保单 OCR
+    setupDragDrop('policyZone', 'policyInput', async file => {
+      const result = document.getElementById('policyResult');
+      const fields = document.getElementById('policyFields');
+      const config = getOcrConfig();
+      result.style.display = 'block';
+      fields.innerHTML = '<div class="loading">OCR 识别中（' + (config.provider || 'mock') + ' 模式）</div>';
+
+      try {
+        const ocrResult = await ocrRecognize(file);
+        if (!ocrResult.success) throw new Error('识别失败');
+        const labels = Object.keys(ocrResult.fields);
+        fields.innerHTML = labels.map(k => `
+          <div class="ocr-field">
+            <div class="ocr-field-label">${k}</div>
+            <div class="ocr-field-value">${ocrResult.fields[k]}</div>
+          </div>
+        `).join('') + '<div style="grid-column: 1 / -1; font-size: 11px; color: var(--color-text-muted); margin-top: 8px;">✓ 识别引擎：' + ocrResult.provider + '</div>';
+        window._policyOcr = ocrResult.fields;
+      } catch (e) {
+        fields.innerHTML = '<div style="color: var(--color-error); padding: 12px;">❌ ' + e.message + '</div>';
+      }
+    });
+
+    function confirmPolicy() {
+      if (!window._policyOcr) return;
+      const data = {};
+      window._policyOcr.forEach(f => {
+        if (f.label === '保单号') data.保单号 = f.value;
+        if (f.label === '被保险人') data.投保人 = f.value;
+        if (f.label === '车牌号') data.车牌号 = f.value;
+        if (f.label === '车架号') data.车架号 = f.value;
+        if (f.label === '保险起期') data.起保日期 = f.value;
+        if (f.label === '保险止期') data.终保日期 = f.value;
+        if (f.label === '保费（含税）') data.原始保费含税 = parseFloat(f.value.replace(/[^0-9.]/g, ''));
+        if (f.label === '险种') data.具体险种 = f.value;
+      });
+      data.保单状态 = '已承保';
+      data.渠道 = '经纪';
+      data.签单日期 = new Date().toISOString().slice(0, 10);
+      addItem(STORAGE_KEYS.carPolicies, data);
+
+      const session = getSession();
+      const history = JSON.parse(localStorage.getItem('nle.importHistory') || '[]');
+      history.unshift({
+        时间: new Date().toLocaleString('zh-CN', { hour12: false }),
+        类型: 'OCR 识别',
+        文件: '保单扫描件',
+        条数: 1,
+        操作人: session ? session.name : '系统'
+      });
+      localStorage.setItem('nle.importHistory', JSON.stringify(history.slice(0, 50)));
+
+      alert('✅ 保单已识别并录入');
+      resetOcr('policy');
+      renderHistory();
+    }
+
+    function resetOcr(type) {
+      document.getElementById(type + 'Result').style.display = 'none';
+      document.getElementById(type + 'Fields').innerHTML = '';
+      document.getElementById(type + 'Input').value = '';
+      window['_' + type + 'Ocr'] = null;
+    }
+
+    function renderHistory() {
+      const history = JSON.parse(localStorage.getItem('nle.importHistory') || '[]');
+      const tbody = document.getElementById('historyBody');
+      if (history.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty">暂无导入历史</td></tr>';
+        return;
+      }
+      tbody.innerHTML = history.map(h => `
+        <tr>
+          <td class="text-mono" style="font-size: 12px;">${h.时间}</td>
+          <td><span class="tag tag-info">${h.类型}</span></td>
+          <td>${h.文件}</td>
+          <td class="text-right text-mono">${h.条数}</td>
+          <td>${h.操作人}</td>
+        </tr>
+      `).join('');
+    }
+
+    renderHistory();
+  </script>
+</body>
+</html>

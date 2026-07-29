@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>录入协议 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <style>
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md); }
+    .form-item { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 12px; color: var(--color-text-secondary); font-weight: 500; }
+    .form-label .req { color: var(--color-error); margin-left: 2px; }
+    .form-input, .form-select, .form-textarea {
+      padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      font-size: 13px; font-family: inherit; outline: none; background: var(--color-bg-white);
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--color-primary); }
+    .form-input.mono { font-family: "SF Mono", Menlo, monospace; }
+    .form-textarea { min-height: 60px; resize: vertical; }
+    .form-section { margin-bottom: var(--space-md); }
+    .form-section-title {
+      font-size: 14px; font-weight: 600; margin-bottom: var(--space-md);
+      padding-bottom: 6px; border-bottom: 1px solid var(--color-border-light);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .form-section-title::before {
+      content: ''; width: 3px; height: 14px; background: var(--color-primary); border-radius: 2px;
+    }
+    .form-tip { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+    .form-tip.text-primary { color: var(--color-primary); }
+    .form-actions {
+      display: flex; gap: var(--space-sm); justify-content: flex-end;
+      padding-top: var(--space-md); border-top: 1px solid var(--color-border-light);
+    }
+    .form-saved {
+      position: fixed; top: 20px; right: 20px; background: var(--color-success);
+      color: white; padding: 12px 20px; border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg); z-index: 1000;
+    }
+    .generated-code {
+      background: var(--color-primary-bg); padding: 10px 14px;
+      border-radius: var(--radius-md); font-family: "SF Mono", monospace;
+      font-weight: 600; color: var(--color-primary-dark);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+            <div class="nav-group">
+        <div class="nav-group-title">理赔共建</div>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔案件列表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表中心</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">系统</div>
+        <a href="#" class="nav-item"><span class="nav-icon">⚙️</span><span>基础数据</span></a>
+        <a href="#" class="nav-item"><span class="nav-icon">📋</span><span>操作日志</span></a>
+      </div>
+      <!-- 用户信息条 -->
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <a href="4-协议管理.html">协议管理</a>
+        <span class="separator">/</span>
+        <span>录入协议</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">📄 录入保司协议</div>
+          <div class="page-subtitle">新能源物流城 · 协议管理 · 框架/结算/补充协议</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="window.location='4-协议管理.html'">取消</button>
+          <button class="btn btn-primary" onclick="submitForm()">💾 保存协议</button>
+        </div>
+      </div>
+
+      <form id="agreementForm" onsubmit="event.preventDefault(); submitForm();">
+
+        <!-- 1. 协议基本信息 -->
+        <div class="card">
+          <div class="card-title form-section-title">📋 一、协议基本信息</div>
+
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">协议编号（系统自动生成）<span class="req">*</span></label>
+              <div class="generated-code" id="generatedCode">—</div>
+              <div class="form-tip text-primary">格式: {公司简称}-{协议类型简称}-{年份}-{序号}</div>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">协议名称<span class="req">*</span></label>
+              <input type="text" name="协议名称" class="form-input" placeholder="例: PICC 财产保险 2026 年结算协议" required>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">协议类型<span class="req">*</span></label>
+              <select name="协议类型" id="协议类型" class="form-select" required>
+                <option value="框架协议">框架协议 (KJXY)</option>
+                <option value="结算协议">结算协议 (JSXY)</option>
+                <option value="补充协议">补充协议 (BCXY)</option>
+              </select>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">保司系<span class="req">*</span></label>
+              <select name="保司系" class="form-select" required>
+                <option value="">请选择</option>
+                <option>平安系</option>
+                <option>太保系</option>
+                <option>大家系</option>
+                <option>人保系</option>
+                <option>中华系</option>
+              </select>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">承保保司<span class="req">*</span></label>
+              <select name="保司" class="form-select" required>
+                <option value="">请选择</option>
+                <option>平安产险深圳分公司</option>
+                <option>太保产险深圳分公司</option>
+                <option>大家财产保险股份有限公司深圳分公司</option>
+                <option>人保财险广州分公司</option>
+                <option>中华联合财险</option>
+              </select>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">渠道<span class="req">*</span></label>
+              <select name="渠道" class="form-select" required>
+                <option value="">请选择</option>
+                <option value="经纪业务">经纪业务</option>
+                <option value="非经纪">非经纪</option>
+              </select>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">业务板块</label>
+              <select name="业务板块" class="form-select">
+                <option value="">请选择</option>
+                <option>车险</option>
+                <option>非车险</option>
+                <option>延保</option>
+                <option>车险+非车险</option>
+                <option>全部</option>
+              </select>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">协议状态<span class="req">*</span></label>
+              <select name="协议状态" class="form-select" required>
+                <option value="生效中">生效中</option>
+                <option value="即将到期">即将到期</option>
+                <option value="已过期">已过期</option>
+                <option value="待复核">待复核</option>
+                <option value="已作废">已作废</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 参与方 -->
+        <div class="card">
+          <div class="card-title form-section-title">🤝 二、协议参与方</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">协议甲方<span class="req">*</span></label>
+              <input type="text" name="协议甲方" class="form-input" value="新能源物流城保险经纪（深圳）有限公司" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">协议乙方<span class="req">*</span></label>
+              <input type="text" name="协议乙方" class="form-input" placeholder="保险公司全称" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 日期 -->
+        <div class="card">
+          <div class="card-title form-section-title">📅 三、协议日期</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">签订日期<span class="req">*</span></label>
+              <input type="date" name="签订日期" class="form-input" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">生效日期<span class="req">*</span></label>
+              <input type="date" name="生效日期" class="form-input" required>
+            </div>
+            <div class="form-item">
+              <label class="form-label">到期日期<span class="req">*</span></label>
+              <input type="date" name="到期日期" id="到期日期" class="form-input" required>
+              <div class="form-tip text-primary" id="expiryTip">距到期 —</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. 商务条款 -->
+        <div class="card">
+          <div class="card-title form-section-title">💼 四、商务条款（结算协议必填）</div>
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">结算周期</label>
+              <select name="结算周期" class="form-select">
+                <option value="">请选择</option>
+                <option>月结（次月 15 日前）</option>
+                <option>月结（次月 20 日前）</option>
+                <option>季结</option>
+                <option>年结</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">佣金比例</label>
+              <input type="text" name="佣金比例" class="form-input" placeholder="例: 25%">
+            </div>
+            <div class="form-item">
+              <label class="form-label">开票要求</label>
+              <select name="开票要求" class="form-select">
+                <option>增值税专用发票</option>
+                <option>增值税普通发票</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. 备注 -->
+        <div class="card">
+          <div class="card-title form-section-title">📝 五、备注</div>
+          <div class="form-grid">
+            <div class="form-item" style="grid-column: 1 / -1;">
+              <label class="form-label">备注 / 特殊条款</label>
+              <textarea name="备注" class="form-textarea"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="form-actions">
+            <button type="button" class="btn" onclick="window.location='4-协议管理.html'">取消</button>
+            <button type="button" class="btn" onclick="resetForm()">重置</button>
+            <button type="submit" class="btn btn-primary">💾 保存协议</button>
+          </div>
+        </div>
+
+      </form>
+
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+    requireAuth();
+
+    function generateCode() {
+      const typeMap = { '框架协议': 'KJXY', '结算协议': 'JSXY', '补充协议': 'BCXY' };
+      const type = document.getElementById('协议类型').value;
+      const code = typeMap[type] || 'JSXY';
+      const year = new Date().getFullYear();
+      // 序号 = 当前已有协议数 + 1（按年份 + 类型）
+      const existing = getList(STORAGE_KEYS.agreements);
+      const filtered = existing.filter(a => a.协议编号 && a.协议编号.includes('-' + code + '-' + year + '-'));
+      const seq = String(filtered.length + 1).padStart(3, '0');
+      document.getElementById('generatedCode').textContent = 'NLE-' + code + '-' + year + '-' + seq;
+    }
+
+    function updateExpiryTip() {
+      const v = document.getElementById('到期日期').value;
+      if (v) {
+        const days = Math.ceil((new Date(v) - new Date()) / (1000 * 60 * 60 * 24));
+        const tip = document.getElementById('expiryTip');
+        if (days < 0) {
+          tip.textContent = '已过期 ' + Math.abs(days) + ' 天';
+          tip.className = 'form-tip text-error';
+        } else if (days <= 30) {
+          tip.textContent = '⚠️ 距到期仅 ' + days + ' 天，需尽快续签';
+          tip.className = 'form-tip text-error';
+        } else if (days <= 90) {
+          tip.textContent = '距到期 ' + days + ' 天，进入续签准备期';
+          tip.className = 'form-tip text-primary';
+        } else {
+          tip.textContent = '距到期 ' + days + ' 天';
+          tip.className = 'form-tip';
+        }
+      }
+    }
+
+    function showSaved(msg) {
+      const d = document.createElement('div');
+      d.className = 'form-saved';
+      d.innerHTML = '✅ ' + msg;
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 2000);
+    }
+
+    function resetForm() {
+      if (confirm('确定重置所有字段？')) {
+        document.getElementById('agreementForm').reset();
+        generateCode();
+      }
+    }
+
+    function submitForm() {
+      const form = document.getElementById('agreementForm');
+      const data = {};
+      new FormData(form).forEach((v, k) => { data[k] = v; });
+      data.协议编号 = document.getElementById('generatedCode').textContent;
+      data.归档日期 = new Date().toISOString().slice(0, 10);
+
+      if (!data.协议名称 || !data.保司) {
+        alert('请填写必填字段');
+        return;
+      }
+
+      addItem(STORAGE_KEYS.agreements, data);
+      showSaved('协议已保存！编号: ' + data.协议编号);
+      setTimeout(() => window.location = '4-协议管理.html', 800);
+    }
+
+    document.getElementById('协议类型').addEventListener('change', generateCode);
+    document.getElementById('到期日期').addEventListener('change', updateExpiryTip);
+
+    // 初始化
+    const today = new Date().toISOString().slice(0, 10);
+    const nextYear = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    document.querySelector('input[name="签订日期"]').value = today;
+    document.querySelector('input[name="生效日期"]').value = today;
+    document.getElementById('到期日期').value = nextYear;
+    generateCode();
+    updateExpiryTip();
+  </script>
+</body>
+</html>

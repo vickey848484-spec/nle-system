@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>咨询服务表 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item active"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+            <div class="nav-group">
+        <div class="nav-group-title">理赔共建</div>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔案件列表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表中心</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">系统</div>
+        <a href="#" class="nav-item"><span class="nav-icon">⚙️</span><span>基础数据</span></a>
+        <a href="#" class="nav-item"><span class="nav-icon">📋</span><span>操作日志</span></a>
+      </div>
+      <!-- 用户信息条 -->
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <span>咨询服务表</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">咨询服务表</div>
+          <div class="page-subtitle">咨询服务费台账 · 按项目按险种分类</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn">📥 导出</button>
+          <a href="咨询录入.html" class="btn btn-primary">+ 新增咨询项目</a>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">本年累计咨询费（含税）</div>
+          <div class="kpi-value">¥ 2.0<span class="unit">M</span></div>
+          <div class="kpi-change up">↑ 较去年同期</div>
+        </div>
+        <div class="kpi-card accent">
+          <div class="kpi-label">本年累计（不含税）</div>
+          <div class="kpi-value">¥ 1.89<span class="unit">M</span></div>
+          <div class="kpi-change">按 6% 税率</div>
+        </div>
+        <div class="kpi-card secondary">
+          <div class="kpi-label">项目数</div>
+          <div class="kpi-value">5</div>
+          <div class="kpi-change">含 1 个主项目</div>
+        </div>
+        <div class="kpi-card warning">
+          <div class="kpi-label">最近入账</div>
+          <div class="kpi-value">2024-01</div>
+          <div class="kpi-change">金额 ¥2.0M</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">💼 咨询服务费明细</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>序号</th>
+                <th>项目名称</th>
+                <th>险种类型</th>
+                <th>渠道</th>
+                <th>入账时间</th>
+                <th class="text-right">咨询费（含税）</th>
+                <th class="text-right">咨询费（不含税）</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-mono">1</td>
+                <td><strong>地上铁保险咨询服务费</strong></td>
+                <td><span class="tag tag-info">财产保险</span></td>
+                <td><span class="tag tag-info">经纪业务</span></td>
+                <td>2024-01-31</td>
+                <td class="text-right text-mono">¥ 2,000,000.00</td>
+                <td class="text-right text-mono">¥ 1,886,792.45</td>
+                <td><a href="#" class="btn">详情</a></td>
+              </tr>
+              <tr>
+                <td class="text-mono">2</td>
+                <td><strong>华强方特 2025 年度保险咨询</strong></td>
+                <td><span class="tag tag-info">意外伤害险</span></td>
+                <td><span class="tag tag-info">经纪业务</span></td>
+                <td>2025-02-15</td>
+                <td class="text-right text-mono">¥ 350,000.00</td>
+                <td class="text-right text-mono">¥ 330,188.68</td>
+                <td><a href="#" class="btn">详情</a></td>
+              </tr>
+              <tr>
+                <td class="text-mono">3</td>
+                <td><strong>东莞鸿源物流延保咨询</strong></td>
+                <td><span class="tag tag-info">延长保修责任险</span></td>
+                <td><span class="tag tag-info">经纪业务</span></td>
+                <td>2025-04-22</td>
+                <td class="text-right text-mono">¥ 120,000.00</td>
+                <td class="text-right text-mono">¥ 113,207.55</td>
+                <td><a href="#" class="btn">详情</a></td>
+              </tr>
+              <tr>
+                <td class="text-mono">4</td>
+                <td><strong>深圳易维雇主责任险咨询</strong></td>
+                <td><span class="tag tag-info">责任保险</span></td>
+                <td><span class="tag tag-info">经纪业务</span></td>
+                <td>2025-09-10</td>
+                <td class="text-right text-mono">¥ 85,000.00</td>
+                <td class="text-right text-mono">¥ 80,188.68</td>
+                <td><a href="#" class="btn">详情</a></td>
+              </tr>
+              <tr>
+                <td class="text-mono">5</td>
+                <td><strong>城市配送团体意外险咨询</strong></td>
+                <td><span class="tag tag-info">意外伤害险</span></td>
+                <td><span class="tag tag-default">非经纪</span></td>
+                <td>2026-03-15</td>
+                <td class="text-right text-mono">¥ 60,000.00</td>
+                <td class="text-right text-mono">¥ 56,603.77</td>
+                <td><a href="#" class="btn">详情</a></td>
+              </tr>
+              <tr style="background: var(--color-bg); font-weight: 600;">
+                <td colspan="5">合计</td>
+                <td class="text-right text-mono">¥ 2,615,000.00</td>
+                <td class="text-right text-mono">¥ 2,466,981.13</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
