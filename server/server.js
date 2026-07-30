@@ -7,9 +7,8 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = process.env.NLE_DATA_DIR || path.join(__dirname, 'data');
-const STATIC_DIR = fs.existsSync(path.join(__dirname, '..', 'index.html'))
-  ? path.join(__dirname, '..')
-  : __dirname;
+const STATIC_DIR = path.join(__dirname, '..');
+
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
