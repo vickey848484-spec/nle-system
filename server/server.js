@@ -15,6 +15,10 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use(express.static(STATIC_DIR));
+app.get(['/pages/数据导出.html', '/pages/%E6%95%B0%E6%8D%AE%E5%AF%BC%E5%87%BA.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'export-fallback.html'));
+});
+
 app.use('/pages', express.static(path.join(STATIC_DIR, 'pages')));
 
 app.get('*', (req, res, next) => {
