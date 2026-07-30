@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>数据导出</title>
+<style>
+body{font-family:-apple-system,sans-serif;background:linear-gradient(135deg,#00BFA5,#1E88E5);min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0;padding:20px}
+.box{background:#fff;border-radius:12px;padding:32px;max-width:560px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+h1{color:#1A1A1A;font-size:22px;margin:0 0 8px}
+p{color:#666;font-size:13px;margin:0 0 24px}
+button{width:100%;padding:14px;background:linear-gradient(90deg,#00BFA5,#1E88E5);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px}
+#result{margin-top:16px;padding:12px;background:#E0F2F1;border-radius:8px;font-size:12px;display:none;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div class="box">
+<h1>📤 数据导出</h1>
+<p>把浏览器里的 localStorage 数据导出成 JSON 文件</p>
+<button onclick="doExport()">📥 一键导出全部数据</button>
+<div id="result"></div>
+</div>
+<script>
+const TABLES={carPolicies:'车险保单',otherPolicies:'非车险保单',extendedPolicies:'延保保单',agreements:'协议',consultations:'咨询费',commissions:'佣金结算',claims:'理赔案件',insuranceCos:'保司基础',users:'用户账号',extendedClaims:'延保理赔'};
+function doExport(){
+const data={};
+for(const k of Object.keys(TABLES)){try{data[k]=JSON.parse(localStorage.getItem('nle.'+k)||'[]')}catch(e){data[k]=[]}}
+const json=JSON.stringify(data,null,2);
+const blob=new Blob(['\ufeff'+json],{type:'application/json'});
+const url=URL.createObjectURL(blob);
+const a=document.createElement('a');
+const ts=new Date().toISOString().slice(0,16).replace(/[-:T]/g,'');
+a.href=url;a.download='nle-data-'+ts+'.json';
+document.body.appendChild(a);a.click();document.body.removeChild(a);
+URL.revokeObjectURL(url);
+const r=document.getElementById('result');
+r.textContent='✅ 已下载 nle-data-'+ts+'.json\n\n文件位置：~/Downloads/\n\n👉 把文件路径告诉我';
+r.style.display='block';
+}
+</script>
+</body>
+</html>
