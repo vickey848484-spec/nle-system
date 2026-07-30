@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据导出 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #00BFA5 0%, #1E88E5 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-md);
+    }
+    .export-wrap {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 640px;
+      overflow: hidden;
+    }
+    .export-header {
+      padding: 32px 32px 16px;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(0,191,165,0.05), rgba(30,136,229,0.05));
+    }
+    .export-icon {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; color: white; margin: 0 auto 12px;
+      box-shadow: 0 4px 12px rgba(0, 191, 165, 0.3);
+    }
+    .export-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .export-subtitle { font-size: 13px; color: var(--color-text-secondary); }
+    .export-body { padding: 16px 32px 32px; }
+
+    .stat-row {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: var(--color-bg); padding: 12px; border-radius: var(--radius-md);
+      text-align: center;
+    }
+    .stat-card .num { font-size: 22px; font-weight: 700; color: var(--color-primary); font-family: "SF Mono", monospace; }
+    .stat-card .label { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+
+    .data-table {
+      border: 1px solid var(--color-border-light); border-radius: var(--radius-md);
+      overflow: hidden; margin-bottom: 16px;
+    }
+    .data-table-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; border-bottom: 1px solid var(--color-border-light);
+      font-size: 13px;
+    }
+    .data-table-row:last-child { border-bottom: none; }
+    .data-table-row .name { font-weight: 500; }
+    .data-table-row .count { font-family: "SF Mono", monospace; color: var(--color-text-secondary); }
+    .data-table-row .count.empty { color: var(--color-error); }
+
+    .btn-export {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+      color: white; border: none; border-radius: var(--radius-md);
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: opacity 0.2s; margin-bottom: 8px;
+      font-family: inherit;
+    }
+    .btn-export:hover { opacity: 0.9; }
+    .btn-export:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-send {
+      width: 100%;
+      padding: 12px;
+      background: white; color: var(--color-primary);
+      border: 1px solid var(--color-primary); border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      font-family: inherit;
+    }
+
+    .alert {
+      padding: 12px; border-radius: var(--radius-md);
+      font-size: 12px; margin-top: 12px;
+      display: none;
+    }
+    .alert.show { display: block; }
+    .alert-success { background: #E0F2F1; color: var(--color-success); }
+    .alert-error { background: #FFEBEE; color: var(--color-error); }
+
+    .step {
+      background: #E3F2FD; padding: 14px; border-radius: var(--radius-md);
+      font-size: 12px; color: #1565C0; margin-top: 12px; line-height: 1.6;
+    }
+    .step strong { color: #0D47A1; }
+  </style>
+</head>
+<body>
+  <div class="export-wrap">
+    <div class="export-header">
+      <div class="export-icon">📤</div>
+      <div class="export-title">数据导出</div>
+      <div class="export-subtitle">把浏览器里的数据导出成 JSON 文件，迁移到 Render</div>
+    </div>
+
+    <div class="export-body">
+      <div id="userInfo" style="text-align:center; font-size:13px; color:var(--color-text-secondary); margin-bottom: 16px;"></div>
+
+      <!-- 数据统计 -->
+      <div class="stat-row" id="statRow"></div>
+
+      <!-- 数据列表 -->
+      <div class="data-table" id="dataTable"></div>
+
+      <!-- 导出按钮 -->
+      <button class="btn-export" id="exportBtn" onclick="doExport()">📥 一键导出全部数据（JSON）</button>
+      <button class="btn-send" onclick="sendToServer()" id="sendBtn" disabled style="display:none;">📡 一键推送到 Render（API 方式）</button>
+
+      <div class="alert alert-success" id="successAlert"></div>
+      <div class="alert alert-error" id="errorAlert"></div>
+
+      <div class="step">
+        <strong>📌 接下来怎么做？</strong><br>
+        ① 点上方「一键导出」，浏览器会下载一份 JSON 文件<br>
+        ② 文件名类似：<code>nle-data-20260730-123456.json</code><br>
+        ③ 记住文件保存位置（默认下载文件夹）<br>
+        ④ 告诉我「已下载到 X 位置」<br>
+        ⑤ 我通过 Render API 把它写进去
+      </div>
+    </div>
+  </div>
+
+  <script>
+    seedIfEmpty();
+
+    const session = getSession();
+    if (session) {
+      document.getElementById('userInfo').innerHTML =
+        '👤 当前用户：<strong>' + session.name + '</strong> （' + session.role + '）';
+    }
+
+    // 7 个数据表 + 1 个自定义表（extendedClaims）
+    const TABLES = {
+      carPolicies: '车险保单',
+      otherPolicies: '非车险保单',
+      extendedPolicies: '延保保单',
+      agreements: '协议',
+      consultations: '咨询费',
+      commissions: '佣金结算',
+      claims: '理赔案件',
+      insuranceCos: '保司基础',
+      users: '用户账号',
+      extendedClaims: '延保理赔'
+    };
+
+    let exportData = {};
+
+    function loadStats() {
+      const items = [];
+      let total = 0;
+      for (const [key, label] of Object.entries(TABLES)) {
+        const list = JSON.parse(localStorage.getItem('nle.' + key) || '[]');
+        const count = list.length;
+        total += count;
+        items.push({ key, label, count, list });
+      }
+
+      // 统计 KPI
+      document.getElementById('statRow').innerHTML = `
+        <div class="stat-card">
+          <div class="num">${items.length}</div>
+          <div class="label">数据表数</div>
+        </div>
+        <div class="stat-card">
+          <div class="num">${total}</div>
+          <div class="label">总记录数</div>
+        </div>
+        <div class="stat-card">
+          <div class="num">${items.filter(i => i.count > 0).length}</div>
+          <div class="label">有数据的表</div>
+        </div>
+      `;
+
+      // 详细列表
+      document.getElementById('dataTable').innerHTML = items.map(i => `
+        <div class="data-table-row">
+          <div class="name">${i.label}</div>
+          <div class="count ${i.count === 0 ? 'empty' : ''}">${i.count} 条</div>
+        </div>
+      `).join('');
+
+      // 准备数据
+      items.forEach(i => { exportData[i.key] = i.list; });
+    }
+
+    function doExport() {
+      const btn = document.getElementById('exportBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ 正在导出...';
+
+      try {
+        const json = JSON.stringify(exportData, null, 2);
+        const blob = new Blob(['﻿' + json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const ts = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
+        a.href = url;
+        a.download = `nle-data-${ts}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        const total = Object.values(exportData).reduce((s, arr) => s + arr.length, 0);
+        showSuccess(`✅ 已下载 nle-data-${ts}.json（${total} 条记录）` +
+                    `\n\n文件位置：浏览器的下载文件夹` +
+                    `\n（如 ~/Downloads/）` +
+                    `\n\n👉 把这个文件拖给我 / 告诉我文件路径` +
+                    `\n👉 我用 Render API 写入数据`);
+      } catch (e) {
+        showError('导出失败：' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📥 一键导出全部数据（JSON）';
+      }
+    }
+
+    async function sendToServer() {
+      const btn = document.getElementById('sendBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ 正在推送...';
+
+      try {
+        const API = window.location.origin + '/api';
+        let totalSent = 0;
+
+        for (const [key, list] of Object.entries(exportData)) {
+          if (list.length === 0) continue;
+          const res = await fetch(API + '/import/' + key, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + (session ? session.token : '')
+            },
+            body: JSON.stringify(list)
+          });
+          if (res.ok) {
+            const j = await res.json();
+            totalSent += j.count;
+            console.log(`✅ ${key}: 写入 ${j.count} 条`);
+          } else {
+            console.warn(`⚠️ ${key}: ${res.status}`);
+          }
+        }
+
+        showSuccess(`✅ 已推送到 Render！共写入 ${totalSent} 条记录。\n\n现在可以登录 Render（https://nle-system.onrender.com）看看数据。`);
+        btn.textContent = '✅ 已完成';
+        btn.disabled = true;
+      } catch (e) {
+        showError('推送失败：' + e.message + '\n\n注意：浏览器从 https 页面 fetch 同源 API 应该能直接调用');
+      }
+    }
+
+    function showSuccess(msg) {
+      const el = document.getElementById('successAlert');
+      el.textContent = msg.replace(/\n/g, '\n\n');
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 30000);
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorAlert');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 10000);
+    }
+
+    loadStats();
+  </script>
+</body>
+</html>
