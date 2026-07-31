@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>续保中心 - 新能源物流城业务系统</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/data.js"></script>
+  <style>
+    .renewal-row {
+      background: white; border-radius: var(--radius-md);
+      padding: var(--space-md); margin-bottom: var(--space-md);
+      box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: var(--space-md);
+      border-left: 4px solid var(--color-primary);
+    }
+    .renewal-row.urgent { border-left-color: var(--color-error); background: #FFF5F5; }
+    .renewal-row.warning { border-left-color: var(--color-warning); background: #FFFAF0; }
+    .renewal-row.future { border-left-color: var(--color-info); }
+    .renewal-row .plate { font-size: 20px; font-weight: 700; min-width: 100px; }
+    .renewal-row .info { flex: 1; }
+    .renewal-row .days { font-size: 24px; font-weight: 700; min-width: 100px; text-align: right; }
+    .renewal-row .days.urgent { color: var(--color-error); }
+    .renewal-row .days.warning { color: var(--color-warning); }
+    .renewal-row .days.future { color: var(--color-info); }
+    .renewal-row .actions { display: flex; gap: 6px; }
+    .alert-empty {
+      padding: 60px 20px; text-align: center; color: var(--color-text-muted);
+    }
+    .alert-empty .icon { font-size: 48px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1><span class="logo-icon">⚡</span><div><div>新能源物流城</div><div class="logo-subtitle">运营业务管理系统</div></div></h1>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">总览</div>
+        <a href="../index.html" class="nav-item"><span class="nav-icon">📊</span><span>工作台</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务模块</div>
+        <a href="1-车险承保.html" class="nav-item"><span class="nav-icon">🚗</span><span>车险承保与理赔</span></a>
+        <a href="2-华强与其他.html" class="nav-item"><span class="nav-icon">🏢</span><span>华强与其他非车险</span></a>
+        <a href="3-延保.html" class="nav-item"><span class="nav-icon">🔧</span><span>延保</span></a>
+        <a href="4-协议管理.html" class="nav-item"><span class="nav-icon">📄</span><span>协议管理</span></a>
+        <a href="5-咨询服务表.html" class="nav-item"><span class="nav-icon">💼</span><span>咨询服务表</span></a>
+        <a href="7-理赔共建.html" class="nav-item"><span class="nav-icon">🔍</span><span>理赔案件列表</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">财务</div>
+        <a href="6-佣金管理.html" class="nav-item"><span class="nav-icon">💰</span><span>佣金管理</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">报表</div>
+        <a href="8-监管报表.html" class="nav-item"><span class="nav-icon">🏛️</span><span>监管报表</span></a>
+        <a href="10-月度台账.html" class="nav-item"><span class="nav-icon">📋</span><span>月度台账</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">业务工具</div>
+        <a href="续保中心.html" class="nav-item active"><span class="nav-icon">🔔</span><span>续保中心</span></a>
+      </div>
+      <div class="user-bar" id="userBar">
+        <div class="user-avatar" id="userAvatar">V</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">--</div>
+          <div class="user-role" id="userRole">--</div>
+        </div>
+        <button class="btn btn-logout" onclick="logout()" title="退出登录">⎋</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="breadcrumb">
+        <a href="../index.html">工作台</a>
+        <span class="separator">/</span>
+        <span>续保中心</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">🔔 续保中心</div>
+          <div class="page-subtitle">到期前 30/15/7 天提醒 · 一键续保 · 含车险+延保</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="exportRenewal()">📥 导出续保清单</button>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <!-- 紧急提醒 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🚨 紧急续保（7 天内到期）</div>
+        </div>
+        <div id="urgentList"></div>
+      </div>
+
+      <!-- 即将到期 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">⚠️ 即将到期（30 天内）</div>
+        </div>
+        <div id="warningList"></div>
+      </div>
+
+      <!-- 未来提醒 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🔔 未来续保（60 天内）</div>
+        </div>
+        <div id="futureList"></div>
+      </div>
+
+      <!-- 已过期 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">❌ 已过期</div>
+        </div>
+        <div id="expiredList"></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    seedIfEmpty();
+
+    let allPolicies = [];
+
+    function loadData() {
+      // 合并车险 + 延保保单
+      allPolicies = [];
+      allPolicies = allPolicies.concat(
+        getList(STORAGE_KEYS.carPolicies).map(p => ({...p, _type: 'car'})),
+        getList(STORAGE_KEYS.otherPolicies).map(p => ({...p, _type: 'other'})),
+        getList(STORAGE_KEYS.extendedPolicies).map(p => ({...p, _type: 'extended'}))
+      );
+    }
+
+    function daysTo(dateStr) {
+      if (!dateStr) return null;
+      const d = new Date(dateStr);
+      if (isNaN(d)) return null;
+      return Math.ceil((d - new Date()) / (1000 * 60 * 60 * 24));
+    }
+
+    function getEndDate(p) {
+      return p.终保日期 || p.保险止期;
+    }
+
+    function getPlate(p) {
+      return p.车牌号 || p.车牌 || '—';
+    }
+
+    function getInsured(p) {
+      return p.被保险人 || p.投保人 || '—';
+    }
+
+    function getCarrier(p) {
+      return p.承保保司 || p.主承保公司 || '—';
+    }
+
+    function getPremium(p) {
+      const v = p.原始保费含税 || p.当前总保费含税 || p.保费含税 || 0;
+      return formatMoneyNoSymbol(v);
+    }
+
+    function getTypeLabel(p) {
+      return ({car: '车险', other: '非车险', extended: '延保'})[p._type] || '保单';
+    }
+
+    function renderRow(p) {
+      const days = daysTo(getEndDate(p));
+      let levelClass = 'future';
+      let levelLabel = '🔔';
+      if (days < 0) { levelClass = 'urgent'; levelLabel = '❌'; }
+      else if (days <= 7) { levelClass = 'urgent'; levelLabel = '🚨'; }
+      else if (days <= 30) { levelClass = 'warning'; levelLabel = '⚠️'; }
+
+      const daysText = days < 0 ? `已过期 ${Math.abs(days)} 天` : `${days} 天`;
+
+      return `
+        <div class="renewal-row ${levelClass}">
+          <div class="plate">${getPlate(p)}</div>
+          <div class="info">
+            <div style="font-weight:600;">${getInsured(p)} · ${p.保单号 || '—'}</div>
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">
+              ${getTypeLabel(p)} · ${getCarrier(p)} · 到期 ${getEndDate(p)} · 保费 ${getPremium(p)} 元
+            </div>
+          </div>
+          <div class="days ${levelClass}">${levelLabel} ${daysText}</div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="renewPolicy('${p.id}')">🔄 一键续保</button>
+            <a href="3-延保.html" class="btn">详情</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderKPI() {
+      const now = new Date();
+      const items = allPolicies.map(p => ({...p, _days: daysTo(getEndDate(p))})).filter(p => p._days !== null);
+      const urgent = items.filter(p => p._days <= 7 && p._days >= 0).length;
+      const warning = items.filter(p => p._days <= 30 && p._days > 7).length;
+      const expired = items.filter(p => p._days < 0).length;
+      const total = items.length;
+
+      document.getElementById('kpiGrid').innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-label">总保单数</div>
+          <div class="kpi-value">${total}</div>
+          <div class="kpi-change">车险+非车险+延保</div>
+        </div>
+        <div class="kpi-card accent">
+          <div class="kpi-label">🚨 7 天内</div>
+          <div class="kpi-value">${urgent}</div>
+          <div class="kpi-change down">需立刻续保</div>
+        </div>
+        <div class="kpi-card warning">
+          <div class="kpi-label">⚠️ 30 天内</div>
+          <div class="kpi-value">${warning}</div>
+          <div class="kpi-change">需关注</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">❌ 已过期</div>
+          <div class="kpi-value text-error" style="color: var(--color-error);">${expired}</div>
+          <div class="kpi-change">需补办</div>
+        </div>
+      `;
+    }
+
+    function renderLists() {
+      const items = allPolicies.map(p => ({...p, _days: daysTo(getEndDate(p))})).filter(p => p._days !== null);
+
+      const urgent = items.filter(p => p._days <= 7 && p._days >= 0);
+      const warning = items.filter(p => p._days > 7 && p._days <= 30);
+      const future = items.filter(p => p._days > 30 && p._days <= 60);
+      const expired = items.filter(p => p._days < 0);
+
+      const fill = (id, list) => {
+        const div = document.getElementById(id);
+        if (list.length === 0) {
+          div.innerHTML = '<div class="alert-empty"><div class="icon">✅</div>暂无提醒</div>';
+          return;
+        }
+        div.innerHTML = list.sort((a, b) => a._days - b._days).map(renderRow).join('');
+      };
+
+      fill('urgentList', urgent);
+      fill('warningList', warning);
+      fill('futureList', future);
+      fill('expiredList', expired);
+    }
+
+    function renewPolicy(id) {
+      const p = allPolicies.find(x => x.id === id);
+      if (!p) { alert('保单不存在'); return; }
+      if (!confirm(`确认续保「${p.车牌号 || p.车牌} · ${p.保单号}」？\n\n系统将自动复制保单信息，日期推至下一年，生成新保单草稿。`)) return;
+
+      // 复制保单，日期推到下一年
+      const newPolicy = JSON.parse(JSON.stringify(p));
+      delete newPolicy.id;
+      newPolicy.createdAt = new Date().toISOString();
+      newPolicy.updatedAt = new Date().toISOString();
+
+      // 日期推一年
+      const oldEnd = getEndDate(p);
+      if (oldEnd) {
+        const newEnd = new Date(oldEnd);
+        newEnd.setFullYear(newEnd.getFullYear() + 1);
+        newPolicy.终保日期 = newEnd.toISOString().slice(0, 10);
+        newPolicy.保险止期 = newPolicy.终保日期;
+
+        const oldStart = p.起保日期 || p.保险起期;
+        if (oldStart) {
+          const newStart = new Date(oldStart);
+          newStart.setFullYear(newStart.getFullYear() + 1);
+          newPolicy.起保日期 = newStart.toISOString().slice(0, 10);
+          newPolicy.保险起期 = newPolicy.起保日期;
+        }
+      }
+
+      // 标记
+      newPolicy.保单状态 = p._type === 'car' ? '已承保' : '保单';
+      newPolicy.备注 = (p.备注 || '') + '（从 ' + p.保单号 + ' 续保）';
+      newPolicy.续保来源 = p.保单号;
+      newPolicy.批单号 = '';
+      newPolicy.当前总保费含税 = p.原始保费含税;
+
+      // 存到对应表
+      const key = p._type === 'car' ? STORAGE_KEYS.carPolicies :
+                  p._type === 'other' ? STORAGE_KEYS.otherPolicies :
+                  STORAGE_KEYS.extendedPolicies;
+      addItem(key, newPolicy);
+      logOperation('renew', p._type === 'car' ? 'carPolicies' : p._type === 'other' ? 'otherPolicies' : 'extendedPolicies', p.id, '', JSON.stringify(newPolicy).slice(0, 200));
+
+      alert('✅ 续保保单已生成：\n\n' + newPolicy.保单号 + '\n起保：' + newPolicy.起保日期 + '\n终保：' + newPolicy.终保日期 + '\n\n跳转查看...');
+
+      // 跳转
+      if (p._type === 'car') window.location = '1-车险承保.html';
+      else if (p._type === 'other') window.location = '2-华强与其他.html';
+      else window.location = '3-延保.html';
+    }
+
+    function exportRenewal() {
+      const items = allPolicies.map(p => ({...p, _days: daysTo(getEndDate(p))})).filter(p => p._days !== null && p._days <= 60);
+      const headers = ['车牌', '类型', '被保险人', '保单号', '保司', '到期日', '距到期', '保费'];
+      const rows = items.sort((a, b) => a._days - b._days).map(p => [getPlate(p), getTypeLabel(p), getInsured(p), p.保单号 || '', getCarrier(p), getEndDate(p), p._days, getPremium(p)]);
+      const csv = '﻿' + [headers, ...rows].map(r => r.map(c => `"${c || ''}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = '续保清单_' + new Date().toISOString().slice(0, 10) + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    loadData();
+    renderKPI();
+    renderLists();
+  </script>
+</body>
+</html>
