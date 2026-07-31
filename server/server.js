@@ -9,18 +9,24 @@ const PORT = process.env.PORT || 3000;
 const DATA_DIR = process.env.NLE_DATA_DIR || path.join(__dirname, 'data');
 const STATIC_DIR = path.join(__dirname, '..');
 
-
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use(express.static(STATIC_DIR));
-app.get(['/pages/数据导出.html', '/pages/%E6%95%B0%E6%8D%AE%E5%AF%BC%E5%87%BA.html'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'export-fallback.html'));
+
+// 关键修复：手动处理 /pages/* 路径（解决中文文件名支持问题）
+app.get('/pages/*', (req, res, next) => {
+  let subPath = decodeURIComponent(req.params[0]);
+  const filePath = path.join(STATIC_DIR, 'pages', subPath);
+  if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
+    res.sendFile(filePath);
+  } else {
+    next();
+  }
 });
 
-app.use('/pages', express.static(path.join(STATIC_DIR, 'pages')));
-
+// SPA fallback
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/')) return next();
   res.sendFile(path.join(STATIC_DIR, 'index.html'));
@@ -62,6 +68,21 @@ function logOperation(user, role, action, module, target, detail) {
     writeAll('operation_logs', logs);
   } catch (e) { console.error(e); }
 }
+
+app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString(), users: USERS.length, tables: TABLES.length }));
+
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  const user = USERS.find(u => u.username === username && u.password === password);
+  if (!user) return res.status(401).json({ error: '账号或密码错误' });
+  const token = generateToken();
+  const session = { token, username: user.username, name: user.name, role: user.role };
+  tokens.set(token, session);
+  logOperation(user.username, user.role, 'login', 'auth', '', '');
+  res.json(session);
+});
+app.post('/api/logout', requireAuth, (req, res) => { tokens.delete(req.user.token); res.json({ ok: true }); });
+app.get('/api/me', requireAuth, (req, res) => res.json(req.user));
 
 for (const table of TABLES) {
   if (table === 'operation_logs') {
@@ -106,7 +127,8 @@ app.post('/api/import/:table', requireAuth, (req, res) => {
   const incoming = req.body;
   if (!Array.isArray(incoming)) return res.status(400).json({ error: '需要数组' });
   const existing = readAll(table);
-  const items = [...incoming.map(item => ({ id: nextId(existing.concat(item)), ...item, created_at: item.created_at || new Date().toISOString(), updated_at: new Date().toISOString() })), ...existing];
+  const items = [...incoming.map(item => ({ id: nextId(existing.concat(item)), ...item, created_at: item.created_at || new Date().toISOString(), updated_at: new Date().toISOString() }))];
+  items.push(...existing);
   writeAll(table, items);
   logOperation(req.user.username, req.user.role, 'import', table, '', '导入 ' + incoming.length + ' 条');
   res.json({ ok: true, count: incoming.length });
@@ -121,20 +143,9 @@ app.get('/api/stats/overview', requireAuth, (req, res) => {
   res.json(result);
 });
 
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  const user = USERS.find(u => u.username === username && u.password === password);
-  if (!user) return res.status(401).json({ error: '账号或密码错误' });
-  const token = generateToken();
-  const session = { token, username: user.username, name: user.name, role: user.role };
-  tokens.set(token, session);
-  logOperation(user.username, user.role, 'login', 'auth', '', '');
-  res.json(session);
+app.get('/', (req, res) => {
+  res.sendFile(path.join(STATIC_DIR, 'index.html'));
 });
-app.post('/api/logout', requireAuth, (req, res) => { tokens.delete(req.user.token); res.json({ ok: true }); });
-app.get('/api/me', requireAuth, (req, res) => res.json(req.user));
-
-app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString(), users: USERS.length, tables: TABLES.length }));
 
 app.listen(PORT, () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
