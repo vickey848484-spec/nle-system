@@ -657,7 +657,7 @@ tbody tr:last-child td {
 .text-mono { font-family: "SF Mono", monospace; }
 
 /* 用户信息条 */
-.user-bar {.user-bar {
+.user-bar {
   position: fixed;
   bottom: 0;
   left: 0;
