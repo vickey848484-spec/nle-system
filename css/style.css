@@ -657,7 +657,7 @@ tbody tr:last-child td {
 .text-mono { font-family: "SF Mono", monospace; }
 
 /* 用户信息条 */
-.user-bar {
+.user-bar {position: fixed; bottom: 0; left: 0; width: 240px; z-index: 100;
   position: absolute;
   bottom: 0;
   left: 0;
@@ -733,7 +733,7 @@ tbody tr:last-child td {
 
 /* 响应式 */
 @media (max-width: 768px) {
-  .sidebar {
+  .sidebar {position: fixed; padding: 0 0 100px;
     width: 100%;
     height: auto;
     position: relative;
